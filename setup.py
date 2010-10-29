@@ -17,7 +17,7 @@ setup(
     zip_safe=False,
     platforms='any',
     install_requires=[
-        'Werkzeug>=0.6.1',
+        #'Werkzeug>=0.6.1',
     ],
     classifiers=[
         'Development Status :: 4 - Beta',

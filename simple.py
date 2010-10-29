@@ -6,7 +6,7 @@ from werkzeug import run_simple
 app = App(__name__)
 
 
-@app.route('/')
+@app.root.route('/')
 def index(app):
     return 'Hello word'
 

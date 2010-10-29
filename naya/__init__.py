@@ -1,10 +1,8 @@
 import os
 
-from jinja2 import Environment, FileSystemLoader
 from werkzeug import Response as ResponseBase, Request
 from werkzeug.exceptions import HTTPException
 from werkzeug.routing import Map, Rule
-from werkzeug.utils import import_string
 from werkzeug.wsgi import SharedDataMiddleware, ClosingIterator
 
 from .helpers import get_package_path
@@ -51,7 +49,10 @@ class Config(object):
     def __getattribute__(self, name):
         if name.startswith('_'):
             return object.__getattribute__(self, name)
-        return self._prefs[name]
+        res = self._prefs[name]
+        if isinstance(res, dict):
+            res = Config(res)
+        return res
 
     def __setattribute__(self, name, value):
         if name.startswith('_'):
@@ -63,46 +64,47 @@ class Response(ResponseBase):
     default_mimetype = 'text/html'
 
 
-class App(Module):
+class App(object):
     request_class = Request
     response_class = Response
 
-    def __init__(self, import_name, prefs_suffix=None):
-        super(App, self).__init__(import_name)
-        self.conf = self.get_prefs(prefs_suffix)
+    def __init__(self, root_module, prefs=None):
+        self.set_root(root_module)
+        self.conf = self.get_prefs(prefs)
         self.init()
+
+    def init(self):
+        from jinja2 import Environment, FileSystemLoader
+        self.jinja = Environment(
+            loader=FileSystemLoader(self.conf.theme.path)
+        )
+
+        self.root.add_route(
+            '%s<path:path>' % self.conf.theme.url_prefix,
+            self.conf.theme.endpoint,
+            build_only=True
+        )
+        self.dispatch = SharedDataMiddleware(self.dispatch, {
+            self.conf.theme.url_prefix: self.conf.theme.path
+        })
+
+    def set_root(self, module):
+        if not isinstance(module, Module):
+            module = Module(module)
+        self.root = module
 
     @property
     def default_prefs(self):
         return {
             'debug': False,
-            'theme_path': self.get_path('_theme'),
-            'theme_endpoint': 'theme'
+            'theme': {
+                'path': self.root.get_path('_theme'),
+                'endpoint': 'theme',
+                'url_prefix': '/s/',
+            }
         }
 
-    def init(self):
-        self.jinja = Environment(
-            loader=FileSystemLoader(self.conf.theme_path)
-        )
-
-        self.add_route(
-            '/<path:file>', self.conf.theme_endpoint, build_only=True
-        )
-        self.dispatch = SharedDataMiddleware(self.dispatch, {
-            '/': self.conf.theme_path
-        })
-
-    def set_root(self, module):
-        self.url_map = module.url_map
-        self.url_views = module.url_views
-
-    def get_prefs(self, prefs_suffix):
-        if prefs_suffix:
-            prefs_ = '%s.%s' % (self.import_name, prefs_suffix)
-            prefs_ = import_string(prefs_)
-        else:
-            prefs_ = {}
-
+    def get_prefs(self, prefs_):
         prefs = self.default_prefs
         if prefs_:
             prefs_ = prefs_(self) if callable(prefs_) else prefs_
@@ -110,6 +112,8 @@ class App(Module):
         return Config(prefs)
 
     def url_for(self, endpoint, **values):
+        if endpoint.startswith(':'):
+            endpoint = '%s%s' % (self.root.import_name, endpoint)
         return self.url_adapter.build(endpoint, values)
 
     def make_response(self, response):
@@ -129,10 +133,10 @@ class App(Module):
 
     def dispatch(self, environ, start_response):
         self.request = Request(environ)
-        self.url_adapter = url_adapter = self.url_map.bind_to_environ(environ)
+        self.url_adapter = self.root.url_map.bind_to_environ(environ)
         try:
-            endpoint, values = url_adapter.match()
-            handler = self.url_views[endpoint]
+            endpoint, values = self.url_adapter.match()
+            handler = self.root.url_views[endpoint]
             response = handler(self, **values)
             response = self.make_response(response)
         except HTTPException, e:
