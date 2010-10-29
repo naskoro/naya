@@ -1,11 +1,14 @@
 import os
 
-from werkzeug import Response as ResponseBase, Request
+from jinja2 import Environment, FileSystemLoader, TemplateNotFound
+from werkzeug import (
+    Response as ResponseBase, Request as RequestBase,
+    SharedDataMiddleware, ClosingIterator
+)
 from werkzeug.exceptions import HTTPException
 from werkzeug.routing import Map, Rule
-from werkzeug.wsgi import SharedDataMiddleware, ClosingIterator
 
-from .helpers import get_package_path
+from .helpers import get_package_path, DictByDot
 
 
 class Module(object):
@@ -42,26 +45,12 @@ class Module(object):
         return os.path.join(*args)
 
 
-class Config(object):
-    def __init__(self, prefs={}):
-        self._prefs = prefs
-
-    def __getattribute__(self, name):
-        if name.startswith('_'):
-            return object.__getattribute__(self, name)
-        res = self._prefs[name]
-        if isinstance(res, dict):
-            res = Config(res)
-        return res
-
-    def __setattribute__(self, name, value):
-        if name.startswith('_'):
-            object.__setattribute__(self, name, value)
-        self._prefs[name] = value
-
-
 class Response(ResponseBase):
     default_mimetype = 'text/html'
+
+
+class Request(RequestBase):
+    pass
 
 
 class App(object):
@@ -69,12 +58,12 @@ class App(object):
     response_class = Response
 
     def __init__(self, root_module, prefs=None):
-        self.set_root(root_module)
+        self.root = self.get_root(root_module)
         self.conf = self.get_prefs(prefs)
+        self.modules = {self.conf.root_prefix: self.root}
         self.init()
 
     def init(self):
-        from jinja2 import Environment, FileSystemLoader
         self.jinja = Environment(
             loader=FileSystemLoader(self.conf.theme.path)
         )
@@ -88,10 +77,26 @@ class App(object):
             self.conf.theme.url_prefix: self.conf.theme.path
         })
 
-    def set_root(self, module):
+    def get_root(self, module):
         if not isinstance(module, Module):
             module = Module(module)
-        self.root = module
+        return module
+
+    def add_module(self, name, module, rule=None):
+        self.modules[name] = module
+        self.root.url_views += module.url_views
+        if rule:
+            self.root.add_route(module.url_rules)
+
+    def url_for(self, endpoint, **values):
+        prefix = endpoint.find(':')
+        if prefix != -1:
+            suffix = endpoint[prefix:]
+            prefix = endpoint[0:prefix]
+            if prefix in self.modules:
+                module = self.modules[prefix]
+                endpoint = '%s%s' % (module.import_name, suffix)
+        return self.url_adapter.build(endpoint, values)
 
     @property
     def default_prefs(self):
@@ -101,7 +106,8 @@ class App(object):
                 'path': self.root.get_path('_theme'),
                 'endpoint': 'theme',
                 'url_prefix': '/s/',
-            }
+            },
+            'root_prefix': '',
         }
 
     def get_prefs(self, prefs_):
@@ -109,12 +115,13 @@ class App(object):
         if prefs_:
             prefs_ = prefs_(self) if callable(prefs_) else prefs_
             prefs.update(prefs_)
-        return Config(prefs)
+        return DictByDot(prefs)
 
-    def url_for(self, endpoint, **values):
-        if endpoint.startswith(':'):
-            endpoint = '%s%s' % (self.root.import_name, endpoint)
-        return self.url_adapter.build(endpoint, values)
+    def get_template(self, template):
+        try:
+            return self.jinja.get_template(template)
+        except TemplateNotFound:
+            return False
 
     def make_response(self, response):
         """
