@@ -150,6 +150,13 @@ class App(object):
                 module.theme_path
             )
             self.root.add_route(
+                '%s/' % prefix,
+                module.build_endpoint('tpl'),
+                defaults={'path': 'index.html'},
+                build_only=True
+            )
+
+            self.root.add_route(
                 '%s/<path:path>' % prefix,
                 module.build_endpoint('tpl'),
                 build_only=True
@@ -160,7 +167,7 @@ class App(object):
             self.dispatch = SharedJinjaMiddleware(self.dispatch, self, '/')
 
     def share_modules(self):
-        shares = {}
+        shares = []
         for name, module in self.modules.items():
             if not module.theme_path:
                 continue
@@ -171,9 +178,11 @@ class App(object):
                 module.build_endpoint(module.theme.endpoint),
                 build_only=True
             )
-            shares[prefix] = module.theme_path
+            shares.append((prefix, module.theme_path))
 
-        self.dispatch = SharedDataMiddleware(self.dispatch, shares)
+        shares.reverse()
+        for prefix, path in shares:
+            self.dispatch = SharedDataMiddleware(self.dispatch, {prefix:path})
 
     def url_for(self, endpoint, **values):
         prefix = endpoint.find(':')

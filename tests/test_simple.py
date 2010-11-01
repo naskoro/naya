@@ -13,13 +13,13 @@ def test_app():
 
     app = c.app
 
-    print app.root.url_map
     aye('==', False, hasattr(app, 'jinja'))
-    aye('==', '/', app.url_for(':index'))
-    aye(hasattr, app, 'modules')
-    aye(hasattr, app, 'root')
+
     aye('==', 1, len(app.modules))
     aye('in', '', app.modules)
+    aye('==', app.modules[''], app.root)
+
     aye('==', 'examples.simple', app.root.import_name)
 
+    aye('==', '/', app.url_for(':index'))
 
