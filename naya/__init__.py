@@ -25,7 +25,9 @@ class Module(object):
         self.theme = theme
         self.import_name = import_name
         self.root_path = get_package_path(self.import_name)
-        self.theme_path = self.get_path(theme.path_suffix)
+
+        theme_path = self.get_path(theme.path_suffix)
+        self.theme_path = os.path.isdir(theme_path) and theme_path or None
 
         self.url_map = Map()
         self.url_views = {}
@@ -38,10 +40,8 @@ class Module(object):
         return '%s:%s' % (self.import_name, endpoint)
 
     def add_route(self, rule, endpoint, view_func=None, **options):
-        if not endpoint.find(':'):
-            self.build_endpint(endpoint)
-        if view_func:
-            endpoint = endpoint
+        if endpoint.find(':') == -1:
+            endpoint = self.build_endpoint(endpoint)
         options['endpoint'] = endpoint
         self.url_map.add(Rule(rule, **options))
         if view_func:
@@ -49,7 +49,7 @@ class Module(object):
 
     def route(self, rule, **options):
         def decorator(func):
-            endpoint = options.get('endpoint', func.__name__)
+            endpoint = options.pop('endpoint', func.__name__)
             self.add_route(rule, endpoint, func, **options)
             return func
         return decorator
@@ -93,11 +93,13 @@ class App(object):
     response_class = Response
 
     def __init__(self, root_module, prefs=None, init_func=None):
-        self.root = self.get_root(root_module)
         self.conf = self.get_prefs(prefs)
+        self.root = self.get_root(root_module)
 
         self.modules = {'': self.root}
         self.modules.update(self.conf.modules._data)
+
+        self.init()
 
     def init(self):
         self.init_modules()
@@ -141,18 +143,26 @@ class App(object):
     def init_jinja(self):
         jinja_loaders = {}
         for name, module in self.modules.items():
+            if not module.theme_path:
+                continue
             prefix = name and '/%s' % name or name
             jinja_loaders[prefix] = FileSystemLoader(
                 module.theme_path
             )
-        self.jinja = Environment(loader=PrefixLoader(jinja_loaders))
+            self.root.add_route(
+                '%s/<path:path>' % prefix,
+                module.build_endpoint('tpl'),
+                build_only=True
+            )
 
-        self.dispatch = SharedJinjaMiddleware(self.dispatch, self, '/')
+        if jinja_loaders:
+            self.jinja = Environment(loader=PrefixLoader(jinja_loaders))
+            self.dispatch = SharedJinjaMiddleware(self.dispatch, self, '/')
 
     def share_modules(self):
         shares = {}
         for name, module in self.modules.items():
-            if not os.path.isdir(module.theme_path):
+            if not module.theme_path:
                 continue
             prefix = '%s%s' % (self.conf.theme.url_prefix, name)
             prefix = '%s' % prefix.rstrip('/')
@@ -198,10 +208,11 @@ class App(object):
             return self.response_class(*response)
         return self.response_class.force_type(response, self.request.environ)
 
-    def dispatch(self, environ, start_response):
+    def pre_dispatch(self, environ):
         self.request = Request(environ)
         self.url_adapter = self.root.url_map.bind_to_environ(environ)
-        self.init()
+
+    def dispatch(self, environ, start_response):
         try:
             endpoint, values = self.url_adapter.match()
             handler = self.root.url_views[endpoint]
@@ -214,4 +225,5 @@ class App(object):
         return ClosingIterator(response(environ, start_response))
 
     def __call__(self, environ, start_response):
+        self.pre_dispatch(environ)
         return self.dispatch(environ, start_response)
