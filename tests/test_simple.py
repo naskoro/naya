@@ -12,7 +12,7 @@ def test_app():
     aye('==', 'Hello world!', rv.data)
 
     app = c.app
-    aye('==', 2, len(app.init_funcs), app.init_funcs)
+    aye('==', 3, len(app.init_funcs), app.init_funcs)
     aye('==', False, hasattr(app, 'jinja'))
 
     aye('==', 1, len(app.modules))

@@ -1,10 +1,12 @@
 import os
 
-from werkzeug import SharedDataMiddleware, ClosingIterator
+from werkzeug import (
+    SharedDataMiddleware, ClosingIterator,
+    Response as BaseResponse, Request as BaseRequest
+)
 from werkzeug.exceptions import HTTPException
 from werkzeug.routing import Map, Rule, Submount
 
-from .base import Response, Request, registry
 from .ext.jinja import JinjaMixin
 from .helpers import get_package_path, DictByDot
 
@@ -60,6 +62,14 @@ class Module(object):
         return '<naya.Module(%s)>' % self
 
 
+class Response(BaseResponse):
+    default_mimetype = 'text/html'
+
+
+class Request(BaseRequest):
+    pass
+
+
 class BaseApp(object):
     request_class = Request
     response_class = Response
@@ -72,7 +82,7 @@ class BaseApp(object):
         self.modules.update(self.conf.modules._data)
 
         for init_func in self.init_funcs:
-            init_func(self)
+            init_func()
 
     @property
     def default_prefs(self):
@@ -100,9 +110,11 @@ class BaseApp(object):
 
     @property
     def init_funcs(self):
-        return registry.init_funcs
+        return [
+            getattr(self, attr) for attr in dir(self)
+            if attr.startswith('init_') and attr!='init_funcs'
+        ]
 
-    @registry.init
     def init_modules(self):
         for name, module in self.modules.items():
             if self.root == module:
@@ -113,8 +125,7 @@ class BaseApp(object):
                 Submount('/%s' % name, module.url_rules)
             )
 
-    @registry.init
-    def share_modules(self):
+    def init_shares(self):
         shares = []
         for name, module in self.modules.items():
             if not module.theme_path:
@@ -179,5 +190,5 @@ class BaseApp(object):
         return self.dispatch(environ, start_response)
 
 
-class App(JinjaMixin, BaseApp):
+class App(BaseApp, JinjaMixin):
     pass

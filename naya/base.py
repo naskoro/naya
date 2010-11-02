@@ -1,22 +1,9 @@
-from werkzeug import Response as ResponseBase, Request as RequestBase
+from werkzeug import Response as BaseResponse, Request as BaseRequest
 
 
-class Response(ResponseBase):
+class Response(BaseResponse):
     default_mimetype = 'text/html'
 
 
-class Request(RequestBase):
+class Request(BaseRequest):
     pass
-
-
-class Registry(object):
-    def __init__(self):
-        self.init_funcs = []
-
-    def init(self, func):
-        """Registers a function to run for initialization."""
-        self.init_funcs.append(func)
-        return func
-
-
-registry = Registry()

@@ -4,7 +4,6 @@ from jinja2 import (
     Environment, TemplateNotFound,
     PrefixLoader as PrefixLoaderBase, FileSystemLoader
 )
-from naya.base import registry
 
 
 class JinjaMixin(object):
@@ -16,7 +15,6 @@ class JinjaMixin(object):
         except IOError:
             return False
 
-    @registry.init
     def init_jinja(self):
         jinja_loaders = {}
         for name, module in self.modules.items():
