@@ -1,18 +1,12 @@
 import os
 
-from jinja2 import (
-    Environment, TemplateNotFound,
-    PrefixLoader as PrefixLoaderBase, FileSystemLoader
-)
-from werkzeug import (
-    Response as ResponseBase, Request as RequestBase,
-    SharedDataMiddleware, ClosingIterator
-)
+from werkzeug import SharedDataMiddleware, ClosingIterator
 from werkzeug.exceptions import HTTPException
 from werkzeug.routing import Map, Rule, Submount
 
+from .base import Response, Request, registry
+from .ext.jinja import JinjaMixin
 from .helpers import get_package_path, DictByDot
-from .wsgi import SharedJinjaMiddleware
 
 
 class Module(object):
@@ -66,29 +60,7 @@ class Module(object):
         return '<naya.Module(%s)>' % self
 
 
-class Response(ResponseBase):
-    default_mimetype = 'text/html'
-
-
-class Request(RequestBase):
-    pass
-
-
-class PrefixLoader(PrefixLoaderBase):
-    def get_source(self, environment, template):
-        for prefix, loader in self.mapping.items():
-            path = template
-            if path.startswith(prefix):
-                path = template[len(prefix):]
-            path = path.lstrip('/')
-            try:
-                return loader.get_source(environment, path)
-            except TemplateNotFound:
-                pass
-        raise TemplateNotFound(template)
-
-
-class App(object):
+class BaseApp(object):
     request_class = Request
     response_class = Response
 
@@ -99,12 +71,8 @@ class App(object):
         self.modules = {'': self.root}
         self.modules.update(self.conf.modules._data)
 
-        self.init()
-
-    def init(self):
-        self.init_modules()
-        self.init_jinja()
-        self.share_modules()
+        for init_func in self.init_funcs:
+            init_func(self)
 
     @property
     def default_prefs(self):
@@ -130,6 +98,11 @@ class App(object):
             module = Module(module, self.conf.theme)
         return module
 
+    @property
+    def init_funcs(self):
+        return registry.init_funcs
+
+    @registry.init
     def init_modules(self):
         for name, module in self.modules.items():
             if self.root == module:
@@ -140,32 +113,7 @@ class App(object):
                 Submount('/%s' % name, module.url_rules)
             )
 
-    def init_jinja(self):
-        jinja_loaders = {}
-        for name, module in self.modules.items():
-            if not module.theme_path:
-                continue
-            prefix = name and '/%s' % name or name
-            jinja_loaders[prefix] = FileSystemLoader(
-                module.theme_path
-            )
-            self.root.add_route(
-                '%s/' % prefix,
-                module.build_endpoint('tpl'),
-                defaults={'path': 'index.html'},
-                build_only=True
-            )
-
-            self.root.add_route(
-                '%s/<path:path>' % prefix,
-                module.build_endpoint('tpl'),
-                build_only=True
-            )
-
-        if jinja_loaders:
-            self.jinja = Environment(loader=PrefixLoader(jinja_loaders))
-            self.dispatch = SharedJinjaMiddleware(self.dispatch, self, '/')
-
+    @registry.init
     def share_modules(self):
         shares = []
         for name, module in self.modules.items():
@@ -194,13 +142,6 @@ class App(object):
                 endpoint = '%s%s' % (module.import_name, suffix)
         return self.url_adapter.build(endpoint, values)
 
-    def get_template(self, template):
-        try:
-            return self.jinja.get_template(template)
-        except TemplateNotFound:
-            return False
-        except IOError:
-            return False
 
     def make_response(self, response):
         """
@@ -236,3 +177,7 @@ class App(object):
     def __call__(self, environ, start_response):
         self.pre_dispatch(environ)
         return self.dispatch(environ, start_response)
+
+
+class App(JinjaMixin, BaseApp):
+    pass

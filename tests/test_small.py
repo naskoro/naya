@@ -11,6 +11,7 @@ def test_app():
     aye('in', '/s/index.html', rv.data)
 
     app = c.app
+    aye('==', 3, len(app.init_funcs), app.init_funcs)
     aye('==', True, hasattr(app, 'jinja'))
 
     aye('==', 1, len(app.modules))
