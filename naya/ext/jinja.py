@@ -47,8 +47,8 @@ class JinjaMixin(object):
             'jinja': {
                 'shared': True,
                 'endpoint': 'tpl',
-                'url_prefix': '/',
-                'path_ends': ['.html', '/index.html']
+                'url_prefix': '/t/',
+                'path_ends': []
             }
         }
 

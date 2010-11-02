@@ -8,6 +8,12 @@ def prefs(app):
         'debug': True,
         'modules': {
             'admin': admin.mod
+        },
+        'jinja': {
+            'shared': True,
+            'endpoint': 'jinja',
+            'url_prefix': '/',
+            'path_ends': ['.html', '/index.html']
         }
     }
 
