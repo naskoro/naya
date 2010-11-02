@@ -38,3 +38,23 @@ def get_template(jinja, template):
         return False
     except IOError:
         return False
+
+
+class register(object):
+    SLUG = 'register_name'
+    def __init__(self, name):
+        self.name = name
+
+    def __call__(self, func):
+        setattr(func, self.SLUG, self.name)
+        return func
+
+    @classmethod
+    def get_funcs(cls, obj, name):
+        funcs = []
+        for attr in dir(obj):
+            attr = getattr(obj, attr)
+            if hasattr(attr, cls.SLUG) and getattr(attr, cls.SLUG) == name:
+                if callable(attr):
+                    funcs.append(attr)
+        return funcs

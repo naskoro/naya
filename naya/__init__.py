@@ -8,7 +8,7 @@ from werkzeug.exceptions import HTTPException
 from werkzeug.routing import Map, Rule, Submount
 
 from .ext.jinja import JinjaMixin
-from .helpers import get_package_path, DictByDot
+from .helpers import get_package_path, DictByDot, register
 
 
 class Module(object):
@@ -81,7 +81,7 @@ class BaseApp(object):
         self.modules = {'': self.root}
         self.modules.update(self.conf.modules._data)
 
-        for init_func in self.init_funcs:
+        for init_func in register.get_funcs(self, 'init'):
             init_func()
 
     @property
@@ -108,13 +108,7 @@ class BaseApp(object):
             module = Module(module, self.conf.theme)
         return module
 
-    @property
-    def init_funcs(self):
-        return [
-            getattr(self, attr) for attr in dir(self)
-            if attr.startswith('init_') and attr!='init_funcs'
-        ]
-
+    @register('init')
     def init_modules(self):
         for name, module in self.modules.items():
             if self.root == module:
@@ -125,6 +119,7 @@ class BaseApp(object):
                 Submount('/%s' % name, module.url_rules)
             )
 
+    @register('init')
     def init_shares(self):
         shares = []
         for name, module in self.modules.items():

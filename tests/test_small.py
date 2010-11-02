@@ -9,9 +9,8 @@ c = Client(small.app)
 def test_app():
     rv = go(c.get, 200, '/')
     aye('in', '/s/index.html', rv.data)
-
     app = c.app
-    aye('==', 3, len(app.init_funcs), app.init_funcs)
+
     aye('==', True, hasattr(app, 'jinja'))
 
     aye('==', 1, len(app.modules))

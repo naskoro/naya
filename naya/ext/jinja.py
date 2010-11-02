@@ -5,6 +5,8 @@ from jinja2 import (
     PrefixLoader as PrefixLoaderBase, FileSystemLoader
 )
 
+from naya.helpers import register
+
 
 class JinjaMixin(object):
     def get_template(self, template):
@@ -15,6 +17,7 @@ class JinjaMixin(object):
         except IOError:
             return False
 
+    @register('init')
     def init_jinja(self):
         jinja_loaders = {}
         for name, module in self.modules.items():

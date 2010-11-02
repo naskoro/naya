@@ -1,3 +1,4 @@
+from naya.helpers import register
 from naya.testing import *
 
 from examples import simple
@@ -10,9 +11,11 @@ def test_app():
 
     rv = go(c.get, 200, '/')
     aye('==', 'Hello world!', rv.data)
-
     app = c.app
-    aye('==', 3, len(app.init_funcs), app.init_funcs)
+
+    init_funcs = register.get_funcs(app, 'init')
+    aye('==', 3, len(init_funcs), init_funcs)
+
     aye('==', False, hasattr(app, 'jinja'))
 
     aye('==', 1, len(app.modules))
