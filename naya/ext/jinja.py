@@ -9,14 +9,6 @@ from naya.helpers import register
 
 
 class JinjaMixin(object):
-    def get_template(self, template):
-        try:
-            return self.jinja.get_template(template)
-        except TemplateNotFound:
-            return False
-        except IOError:
-            return False
-
     @register('init')
     def init_jinja(self):
         jinja_loaders = {}
