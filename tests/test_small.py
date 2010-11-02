@@ -32,13 +32,9 @@ def test_urls():
     rv = go(c.get, 200, '/t/index.html')
     aye('in', '/s/index.html', rv.data)
 
-    rv = go(c.get, 200, '/t/')
-    aye('in', '/s/index.html', rv.data)
-
-    rv = go(c.get, 200, '/t/index')
-    aye('in', '/s/index.html', rv.data)
-
     rv = go(c.get, 200, '/s/index.html')
     aye('in', '{{ template }}', rv.data)
 
+    go(c.get, 404, '/t/')
+    go(c.get, 404, '/t/index')
     go(c.get, 404, '/t/not_found')

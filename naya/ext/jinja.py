@@ -47,7 +47,8 @@ class JinjaMixin(object):
             'jinja': {
                 'shared': True,
                 'endpoint': 'tpl',
-                'url_prefix': '/'
+                'url_prefix': '/',
+                'path_ends': ['.html', '/index.html']
             }
         }
 
@@ -80,7 +81,11 @@ class SharedJinjaMiddleware(object):
             path = path[len(self.prefix):]
             path = '/%s' % path.strip('/')
             path = path.rstrip('/')
-            paths = ['%s' % path, '%s.html' % path, '%s/index.html' % path]
+
+            path_ends = self.app.conf.jinja.path_ends
+            paths = path_ends and [path + item for item in path_ends] or []
+            paths = [path] + paths
+
             try:
                 template = self.app.jinja.select_template(paths)
             except TemplateNotFound:

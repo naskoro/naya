@@ -4,6 +4,7 @@ def get_prefs(app):
         'jinja': {
             'shared': True,
             'endpoint': 'jinja',
-            'url_prefix': '/t/'
+            'url_prefix': '/t/',
+            'path_ends': []
         }
     }
