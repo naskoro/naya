@@ -17,19 +17,6 @@ def params_to_string(args, kwargs, pattern='%s'):
     return [(pattern % param) for param in params] if params else params
 
 
-class Func(object):
-    def __init__(self, func, *args, **kwargs):
-        self.func
-        self.args = args
-        self.kwargs = kwargs
-        params = params_to_string(args, kwargs, '%r')
-        params = ', '.join(params)
-        self.message = '%s(%s)' % (func.__name__, params)
-
-    def __call__(self):
-        return self.func(*self.args, **self.kwargs)
-
-
 def go(method, status_code, *args, **kwargs):
     '''Helper for checking status code.'''
     rv = method(*args, **kwargs)
