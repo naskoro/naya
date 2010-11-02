@@ -136,7 +136,7 @@ class BaseApp(object):
 
         shares.reverse()
         for prefix, path in shares:
-            self.dispatch = SharedDataMiddleware(self.dispatch, {prefix:path})
+            self.dispatch = SharedDataMiddleware(self.dispatch, {prefix: path})
 
     def url_for(self, endpoint, **values):
         prefix = endpoint.find(':')
@@ -147,7 +147,6 @@ class BaseApp(object):
                 module = self.modules[prefix]
                 endpoint = '%s%s' % (module.import_name, suffix)
         return self.url_adapter.build(endpoint, values)
-
 
     def make_response(self, response):
         """

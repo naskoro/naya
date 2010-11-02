@@ -1,8 +1,6 @@
 import os
 import sys
 
-from jinja2 import TemplateNotFound
-
 
 def get_package_path(name):
     """Returns the path to a package or cwd if that cannot be found."""
@@ -30,18 +28,9 @@ class DictByDot(object):
         self._data[name] = value
 
 
-def get_template(jinja, template):
-    return jinja.get_template(template)
-    try:
-        return jinja.get_template(template)
-    except TemplateNotFound:
-        return False
-    except IOError:
-        return False
-
-
 class register(object):
     SLUG = 'register_name'
+
     def __init__(self, name):
         self.name = name
 

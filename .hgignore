@@ -1,4 +1,4 @@
 syntax: regexp
 
 \.pyc$
-^examples\/naya
+\.coverage$

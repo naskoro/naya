@@ -24,4 +24,3 @@ def test_app():
     aye('==', 'examples.simple', app.root.import_name)
 
     aye('==', '/', app.url_for(':index'))
-
