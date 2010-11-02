@@ -1,3 +1,9 @@
 def get_prefs(app):
-    prefs = {'debug': True}
-    return prefs
+    return {
+        'debug': True,
+        'jinja': {
+            'shared': True,
+            'endpoint': 'jinja',
+            'url_prefix': '/t/'
+        }
+    }

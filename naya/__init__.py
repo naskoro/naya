@@ -84,7 +84,7 @@ class BaseApp(object):
         for init_func in register.get_funcs(self, 'init'):
             init_func()
 
-    @property
+    @register('default_prefs')
     def default_prefs(self):
         return {
             'debug': False,
@@ -97,7 +97,10 @@ class BaseApp(object):
         }
 
     def get_prefs(self, prefs_):
-        prefs = self.default_prefs
+        prefs = {}
+        for func in register.get_funcs(self, 'default_prefs'):
+            prefs.update(func())
+
         if prefs_:
             prefs_ = prefs_(self) if callable(prefs_) else prefs_
             prefs.update(prefs_)

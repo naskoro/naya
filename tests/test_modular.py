@@ -13,7 +13,7 @@ def test_app():
 
     aye('==', True, hasattr(app, 'jinja'))
 
-    aye('==', 2, len(app.modules))
+    aye('==', 2, len(app.modules), app.modules)
     aye('in', '', app.modules)
     aye('in', 'admin', app.modules)
     aye('==', app.modules[''], app.root)
@@ -56,10 +56,11 @@ def test_urls():
     rv = go(c.get, 200, '/s/admin/index.html')
     aye('in', 'admin', rv.data)
 
-    go(c.get, 404, '/admin/not_found')
-
     rv = go(c.get, 200, '/admin/base')
     aye('in', 'text/html', rv.content_type)
+    aye('in', 'admin/base.html', rv.data)
 
     rv = go(c.get, 200, '/admin/test')
     aye('in', 'text/html', rv.content_type)
+
+    go(c.get, 404, '/admin/not_found')

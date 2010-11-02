@@ -10,8 +10,13 @@ from naya.helpers import register
 
 class JinjaMixin(object):
     @register('init')
-    def init_jinja(self):
+    def jinja_init(self):
         jinja_loaders = {}
+
+        shared = self.conf.jinja.shared
+        endpoint = self.conf.jinja.endpoint
+        url_prefix = self.conf.jinja.url_prefix
+
         for name, module in self.modules.items():
             if not module.theme_path:
                 continue
@@ -19,15 +24,32 @@ class JinjaMixin(object):
             jinja_loaders[prefix] = FileSystemLoader(
                 module.theme_path
             )
-            self.root.add_route(
-                '%s/<path:path>' % prefix,
-                module.build_endpoint('tpl'),
-                build_only=True
-            )
+            if shared:
+                prefix = prefix.lstrip('/')
+                prefix = '%s%s' % (url_prefix, prefix)
+                prefix = prefix.rstrip('/')
+                self.root.add_route(
+                    '%s/<path:path>' % prefix,
+                    module.build_endpoint(endpoint),
+                    build_only=True
+                )
 
         if jinja_loaders:
             self.jinja = Environment(loader=PrefixLoader(jinja_loaders))
-            self.dispatch = SharedJinjaMiddleware(self.dispatch, self, '/')
+            if shared:
+                self.dispatch = SharedJinjaMiddleware(
+                    self.dispatch, self, url_prefix
+                )
+
+    @register('default_prefs')
+    def jinja_prefs(self):
+        return {
+            'jinja': {
+                'shared': True,
+                'endpoint': 'tpl',
+                'url_prefix': '/'
+            }
+        }
 
 
 class PrefixLoader(PrefixLoaderBase):
@@ -53,10 +75,12 @@ class SharedJinjaMiddleware(object):
 
     def __call__(self, environ, start_response):
         path = environ.get('PATH_INFO', '/')
+        template = None
         if path.startswith(self.prefix):
-            path = path[path.index(self.prefix):]
+            path = path[len(self.prefix):]
+            path = '/%s' % path.strip('/')
             path = path.rstrip('/')
-            paths = ['%s' % path, '%s/index.html' % path, '%s.html' % path]
+            paths = ['%s' % path, '%s.html' % path, '%s/index.html' % path]
             try:
                 template = self.app.jinja.select_template(paths)
             except TemplateNotFound:

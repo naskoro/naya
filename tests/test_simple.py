@@ -12,6 +12,10 @@ def test_app():
     aye('==', 'Hello world!', rv.data)
     app = c.app
 
+    prefs = app.default_prefs()
+    prefs.update(app.jinja_prefs())
+    aye('==', app.conf._data, prefs)
+
     init_funcs = register.get_funcs(app, 'init')
     aye('==', 3, len(init_funcs), init_funcs)
 
