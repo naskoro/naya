@@ -55,3 +55,11 @@ def test_urls():
 
     rv = go(c.get, 200, '/s/admin/index.html')
     aye('in', 'admin', rv.data)
+
+    go(c.get, 404, '/admin/not_found')
+
+    rv = go(c.get, 200, '/admin/base')
+    aye('in', 'text/html', rv.content_type)
+
+    rv = go(c.get, 200, '/admin/test')
+    aye('in', 'text/html', rv.content_type)

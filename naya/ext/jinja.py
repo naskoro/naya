@@ -61,16 +61,19 @@ class SharedJinjaMiddleware(object):
 
     def __call__(self, environ, start_response):
         path = environ.get('PATH_INFO', '/')
-        template = None
-        if path.endswith('/'):
-            path = '%sindex.html' % path
         if path.startswith(self.prefix):
             path = path[path.index(self.prefix):]
-            path = '/%s' % path.lstrip('/')
-            template = self.app.get_template(path)
+            path = path.rstrip('/')
+            paths = ['%s' % path, '%s/index.html' % path, '%s.html' % path]
+            try:
+                template = self.app.jinja.select_template(paths)
+            except TemplateNotFound:
+                template = None
 
         if not template:
             return self.dispatch(environ, start_response)
+
+        path = template.name
 
         guessed_type = mimetypes.guess_type(path)
         mime_type = guessed_type[0] or 'text/plain'
