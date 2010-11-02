@@ -21,5 +21,7 @@ def test_app():
 
     aye('==', '/hello/', app.url_for(':hello'))
     aye('==', '/hello/bob', app.url_for(':hello', name='bob'))
-    aye('==', '/', app.url_for(':tpl', path='index.html'))
+    aye('==', '/', app.url_for(':tpl', path=''))
+    aye('==', '/', app.url_for(':tpl', path='/'))
+    aye('==', '/index.html', app.url_for(':tpl', path='index.html'))
     aye('==', '/s/index.html', app.url_for(':theme', path='index.html'))

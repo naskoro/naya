@@ -8,7 +8,6 @@ c = Client(simple.app)
 
 
 def test_app():
-
     rv = go(c.get, 200, '/')
     aye('==', 'Hello world!', rv.data)
     app = c.app

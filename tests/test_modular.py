@@ -7,8 +7,8 @@ c = Client(modular.app)
 
 
 def test_app():
-    rv = go(c.get, 200, '/')
-    aye('in', '/s/index.html', rv.data)
+    # Need for app right
+    go(c.get, 200, '/')
     app = c.app
 
     aye('==', True, hasattr(app, 'jinja'))
@@ -20,8 +20,9 @@ def test_app():
     aye('==', 'examples.modular.front', app.root.import_name)
     aye('==', 'examples.modular.admin', app.modules['admin'].import_name)
 
+    aye('==', '/', app.url_for(':tpl', path=''))
     aye('==', '/', app.url_for(':tpl', path='/'))
-    aye('==', '/', app.url_for(':tpl', path='index.html'))
+    aye('==', '/index.html', app.url_for(':tpl', path='index.html'))
     aye('==', '/admin/', app.url_for(':tpl', path='admin/'))
     aye('==', '/admin/index.html',
         app.url_for(':tpl', path='admin/index.html')

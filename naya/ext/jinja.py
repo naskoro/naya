@@ -28,13 +28,6 @@ class JinjaMixin(object):
                 module.theme_path
             )
             self.root.add_route(
-                '%s/' % prefix,
-                module.build_endpoint('tpl'),
-                defaults={'path': 'index.html'},
-                build_only=True
-            )
-
-            self.root.add_route(
                 '%s/<path:path>' % prefix,
                 module.build_endpoint('tpl'),
                 build_only=True
