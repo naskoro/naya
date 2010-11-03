@@ -15,17 +15,15 @@ def action_clean(mask=''):
     local('\n'.join(command), capture=False)
 
 
-def action_test(target='', coverage=True):
+def action_test(target='', coverage=False):
     '''Run tests.'''
-    command = 'nosetests -v'
+    command = ['nosetests -v']
     if coverage:
-        command = (
-            '%s --cover-tests --with-coverage --cover-package=naya' % command
-        )
+        command.append('--with-coverage --cover-tests --cover-package=naya')
     if target:
-        command = '%s %s' % (command, target)
+        command.append(target)
 
-    local(command, capture=False)
+    local(' '.join(command), capture=False)
 
 
 if __name__ == '__main__':
