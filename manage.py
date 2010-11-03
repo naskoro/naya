@@ -15,5 +15,18 @@ def action_clean(mask=''):
     local('\n'.join(command), capture=False)
 
 
+def action_test(target='', coverage=True):
+    '''Run tests.'''
+    command = 'nosetests -v'
+    if coverage:
+        command = (
+            '%s --cover-tests --with-coverage --cover-package=naya' % command
+        )
+    if target:
+        command = '%s %s' % (command, target)
+
+    local(command, capture=False)
+
+
 if __name__ == '__main__':
     run()
