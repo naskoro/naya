@@ -74,12 +74,14 @@ class BaseApp(object):
     request_class = Request
     response_class = Response
 
-    def __init__(self, root_module, prefs=None, init_func=None):
-        self.conf = self.get_prefs(prefs)
-        self.root = self.get_root(root_module)
+    def __init__(self, prefs):
+        if isinstance(prefs, basestring):
+            prefs = {'modules': {'': Module(prefs)}}
 
-        self.modules = {'': self.root}
-        self.modules.update(self.conf.modules._data)
+        self.conf = self.get_prefs(prefs)
+
+        self.root = self.conf.modules._data.values()[0]
+        self.modules = self.conf.modules._data
 
         for init_func in register.get_funcs(self, 'init'):
             init_func()
@@ -101,15 +103,8 @@ class BaseApp(object):
         for func in register.get_funcs(self, 'default_prefs'):
             prefs.update(func())
 
-        if prefs_:
-            prefs_ = prefs_(self) if callable(prefs_) else prefs_
-            prefs.update(prefs_)
+        prefs.update(prefs_)
         return DictByDot(prefs)
-
-    def get_root(self, module):
-        if not isinstance(module, Module):
-            module = Module(module, self.conf.theme)
-        return module
 
     @register('init')
     def init_modules(self):

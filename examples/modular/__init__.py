@@ -3,10 +3,11 @@ from naya import App
 from . import admin, front
 
 
-def prefs(app):
+def prefs():
     return {
         'debug': True,
         'modules': {
+            '': front.mod,
             'admin': admin.mod
         },
         'jinja': {
@@ -17,4 +18,4 @@ def prefs(app):
         }
     }
 
-app = App(front.mod, prefs)
+app = App(prefs())

@@ -1,4 +1,6 @@
-def get_prefs(app):
-    return {
-        'debug': True,
-    }
+from . import views
+
+prefs = {
+    'debug': True,
+    'modules': {'': views.root}
+}
