@@ -58,10 +58,11 @@ class Config(dict):
     def update(self, data):
         self.is_valid(data)
         for key, value in data.items():
-            if not key in self or not isinstance(value, dict):
-                self[key] = value
-                continue
+            if key in self and isinstance(self[key], dict):
+                if isinstance(value, dict):
+                    new = self[key]
+                    new.update(value)
+                    super(Config, self).__setitem__(key, new)
+                    continue
 
-            new = self[key]
-            new.update(value)
-            super(Config, self).__setitem__(key, new)
+            self[key] = value

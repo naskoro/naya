@@ -36,6 +36,10 @@ def test_config_update():
     eq_(3, conf['b:b:a'])
     eq_(30, conf['b:b:c'])
 
+    conf['b:d'] = []
+    conf.update({'b': {'d': {'a': 1}}})
+    eq_(1, conf['b:d:a'])
+
 
 def test_config_set():
     conf = Config(CONFIG)

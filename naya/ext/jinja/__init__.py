@@ -36,6 +36,7 @@ class JinjaMixin(object):
 
         if jinja_loaders:
             self.jinja = Environment(loader=PrefixLoader(jinja_loaders))
+            self.jinja.filters.update(self.conf['jinja:filters'])
             if shared:
                 self.dispatch = SharedJinjaMiddleware(
                     self.dispatch, self, url_prefix
@@ -48,7 +49,8 @@ class JinjaMixin(object):
                 'shared': True,
                 'endpoint': 'jinja',
                 'url_prefix': '/t/',
-                'path_ends': []
+                'path_ends': [],
+                'filters': {},
             }
         }
 
