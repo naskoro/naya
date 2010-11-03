@@ -20,15 +20,15 @@ def test_app():
     aye('==', 'examples.modular.front', app.root.import_name)
     aye('==', 'examples.modular.admin', app.modules['admin'].import_name)
 
-    aye('==', '/', app.url_for(':jinja', path=''))
-    aye('==', '/', app.url_for(':jinja', path='/'))
-    aye('==', '/index.html', app.url_for(':jinja', path='index.html'))
-    aye('==', '/admin/', app.url_for(':jinja', path='admin/'))
+    aye('==', '/', app.url_for(':tpl', path=''))
+    aye('==', '/', app.url_for(':tpl', path='/'))
+    aye('==', '/index.html', app.url_for(':tpl', path='index.html'))
+    aye('==', '/admin/', app.url_for(':tpl', path='admin/'))
     aye('==', '/admin/index.html',
-        app.url_for(':jinja', path='admin/index.html')
+        app.url_for(':tpl', path='admin/index.html')
     )
     aye('==', '/admin/base.html',
-        app.url_for(':jinja', path='admin/base.html')
+        app.url_for(':tpl', path='admin/base.html')
     )
     aye('==', '/s/index.html', app.url_for(':theme', path='index.html'))
     aye('==', '/s/admin/index.html',

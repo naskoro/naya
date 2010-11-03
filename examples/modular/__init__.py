@@ -12,7 +12,7 @@ def prefs():
         },
         'jinja': {
             'shared': True,
-            'endpoint': 'jinja',
+            'endpoint': 'tpl',
             'url_prefix': '/',
             'path_ends': ['.html', '/index.html']
         }

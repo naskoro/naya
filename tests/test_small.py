@@ -20,8 +20,8 @@ def test_app():
 
     aye('==', '/', app.url_for(':hello'))
     aye('==', '/bob', app.url_for(':hello', name='bob'))
-    aye('==', '/t/', app.url_for(':tpl', path=''))
-    aye('==', '/t/index.html', app.url_for(':tpl', path='index.html'))
+    aye('==', '/t/', app.url_for(':jinja', path=''))
+    aye('==', '/t/index.html', app.url_for(':jinja', path='index.html'))
     aye('==', '/s/index.html', app.url_for(':theme', path='index.html'))
 
 

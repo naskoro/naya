@@ -46,7 +46,7 @@ class JinjaMixin(object):
         return {
             'jinja': {
                 'shared': True,
-                'endpoint': 'tpl',
+                'endpoint': 'jinja',
                 'url_prefix': '/t/',
                 'path_ends': []
             }
