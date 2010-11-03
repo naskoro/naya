@@ -1,5 +1,10 @@
 """
 Naya
+----
+
+Naya is a microframework for Python based on Werkzeug.
+
+See /examples.
 """
 from setuptools import setup
 
@@ -17,7 +22,7 @@ setup(
     zip_safe=False,
     platforms='any',
     install_requires=[
-        #'Werkzeug>=0.6.1',
+        'Werkzeug>=0.6.1',
     ],
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -29,5 +34,5 @@ setup(
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],
-    #test_suite='__main__.run_tests'
+    test_suite = 'nose.collector'
 )
