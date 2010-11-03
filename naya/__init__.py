@@ -7,8 +7,9 @@ from werkzeug import (
 from werkzeug.exceptions import HTTPException
 from werkzeug.routing import Map, Rule, Submount
 
+from .conf import Config
 from .ext.jinja import JinjaMixin
-from .helpers import get_package_path, DictByDot, register
+from .helpers import get_package_path, register
 
 
 class Module(object):
@@ -16,13 +17,13 @@ class Module(object):
         if not theme:
             theme = {'path_suffix': '_theme', 'endpoint': 'theme'}
         if isinstance(theme, dict):
-            theme = DictByDot(theme)
+            theme = Config(theme)
 
         self.theme = theme
         self.import_name = import_name
         self.root_path = get_package_path(self.import_name)
 
-        theme_path = self.get_path(theme.path_suffix)
+        theme_path = self.get_path(theme['path_suffix'])
         self.theme_path = os.path.isdir(theme_path) and theme_path or None
 
         self.url_map = Map()
@@ -80,8 +81,8 @@ class BaseApp(object):
 
         self.conf = self.get_prefs(prefs)
 
-        self.root = self.conf.modules._data.values()[0]
-        self.modules = self.conf.modules._data
+        self.root = self.conf['modules:']
+        self.modules = self.conf['modules']
 
         for init_func in register.get_funcs(self, 'init'):
             init_func()
@@ -104,7 +105,7 @@ class BaseApp(object):
             prefs.update(func())
 
         prefs.update(prefs_)
-        return DictByDot(prefs)
+        return Config(prefs)
 
     @register('init')
     def init_modules(self):
@@ -123,11 +124,11 @@ class BaseApp(object):
         for name, module in self.modules.items():
             if not module.theme_path:
                 continue
-            prefix = '%s%s' % (self.conf.theme.url_prefix, name)
+            prefix = '%s%s' % (self.conf['theme:url_prefix'], name)
             prefix = '%s' % prefix.rstrip('/')
             self.root.add_route(
                 '%s/<path:path>' % prefix,
-                module.build_endpoint(module.theme.endpoint),
+                module.build_endpoint(self.conf['theme:endpoint']),
                 build_only=True
             )
             shares.append((prefix, module.theme_path))

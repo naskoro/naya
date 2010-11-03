@@ -13,9 +13,9 @@ class JinjaMixin(object):
     def jinja_init(self):
         jinja_loaders = {}
 
-        shared = self.conf.jinja.shared
-        endpoint = self.conf.jinja.endpoint
-        url_prefix = self.conf.jinja.url_prefix
+        shared = self.conf['jinja:shared']
+        endpoint = self.conf['jinja:endpoint']
+        url_prefix = self.conf['jinja:url_prefix']
 
         for name, module in self.modules.items():
             if not module.theme_path:
@@ -82,7 +82,7 @@ class SharedJinjaMiddleware(object):
             path = '/%s' % path.strip('/')
             path = path.rstrip('/')
 
-            path_ends = self.app.conf.jinja.path_ends
+            path_ends = self.app.conf['jinja:path_ends']
             paths = path_ends and [path + item for item in path_ends] or []
             paths = [path] + paths
 

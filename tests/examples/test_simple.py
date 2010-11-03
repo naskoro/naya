@@ -15,7 +15,7 @@ def test_app():
     prefs = app.default_prefs()
     prefs.update(app.jinja_prefs())
     prefs.update({'modules': {'': app.root}})
-    aye('==', app.conf._data, prefs)
+    aye('==', app.conf, prefs)
 
     init_funcs = register.get_funcs(app, 'init')
     aye('==', 3, len(init_funcs), init_funcs)
