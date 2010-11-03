@@ -33,8 +33,6 @@ class Config(dict):
                 return value[name[index + 1:]]
             raise KeyError
         value = super(Config, self).__getitem__(name)
-        if value is None:
-            raise KeyError
         if isinstance(value, dict):
             value = Config(value)
         return value
@@ -50,9 +48,10 @@ class Config(dict):
             super(Config, self).__setitem__(key, new)
             return
 
-        if name in self and isinstance(self[name], dict) and isinstance(value, dict):
-            self[name].update(value)
-            return
+        if name in self and isinstance(self[name], dict):
+            if isinstance(value, dict):
+                self[name].update(value)
+                return
 
         super(Config, self).__setitem__(name, value)
 
@@ -66,4 +65,3 @@ class Config(dict):
             new = self[key]
             new.update(value)
             super(Config, self).__setitem__(key, new)
-

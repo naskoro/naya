@@ -44,6 +44,9 @@ def test_config_set():
     eq_(3, conf['b:b:a'])
     eq_(30, conf['b:b:c'])
 
+    conf['b:b'] = 30
+    eq_(30, conf['b:b'])
+
     conf['b:'] = 0
     eq_(2, conf['b:a'])
     eq_(0, conf['b:'])
@@ -52,6 +55,7 @@ def test_config_set():
 def test_config_fail():
     conf = Config(CONFIG)
 
+    assert_raises(KeyError, lambda: conf['b:a:c'])
     assert_raises(KeyError, lambda: conf['d'])
     assert_raises(KeyError, lambda: conf['b:d'])
 
