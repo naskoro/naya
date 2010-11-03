@@ -100,12 +100,12 @@ class BaseApp(object):
         }
 
     def get_prefs(self, prefs_):
-        prefs = {}
+        prefs = Config()
         for func in register.get_funcs(self, 'default_prefs'):
             prefs.update(func())
 
         prefs.update(prefs_)
-        return Config(prefs)
+        return prefs
 
     @register('init')
     def init_modules(self):

@@ -11,7 +11,6 @@ def prefs():
             'admin': admin.mod
         },
         'jinja': {
-            'shared': True,
             'endpoint': 'tpl',
             'url_prefix': '/',
             'path_ends': ['.html', '/index.html']
