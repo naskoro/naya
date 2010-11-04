@@ -7,11 +7,10 @@ c = Client(modular.app)
 
 
 def test_app():
-    # Need for app right
     go(c.get, 200, '/')
     app = c.app
 
-    aye('==', True, hasattr(app, 'jinja'))
+    aye(True, hasattr(app, 'jinja'))
 
     aye('==', 2, len(app.modules), app.modules)
     aye('in', '', app.modules)

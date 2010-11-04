@@ -10,7 +10,7 @@ def test_app():
     go(c.get, 200, '/')
     app = c.app
 
-    aye('==', True, hasattr(app, 'jinja'))
+    aye(True, hasattr(app, 'jinja'))
 
     aye('==', 1, len(app.modules))
     aye('in', '', app.modules)

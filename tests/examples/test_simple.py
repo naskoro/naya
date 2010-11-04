@@ -20,7 +20,7 @@ def test_app():
     init_funcs = register.get_funcs(app, 'init')
     aye('==', 3, len(init_funcs), init_funcs)
 
-    aye('==', False, hasattr(app, 'jinja'))
+    aye(False, hasattr(app, 'jinja'))
 
     aye('==', 1, len(app.modules))
     aye('in', '', app.modules)

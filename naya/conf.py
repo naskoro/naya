@@ -9,11 +9,12 @@ class Config(dict):
         self.is_valid(self)
 
     def is_valid(self, data):
-        regex = '[^a-z_]'
+        regex = r'^$|^([a-z_][a-z_0-9]*$)'
         for key, value in data.items():
-            if not isinstance(key, basestring) or re.search(regex, key):
+            if not isinstance(key, basestring) or not re.match(regex, key):
                 raise KeyError(
-                    'All keys must be string and match regex[%r]' % regex
+                    'Keys must be a string and match %r, but contains key: %r'
+                    % (regex, key)
                 )
             if isinstance(value, dict):
                 self.is_valid(value)
@@ -48,21 +49,30 @@ class Config(dict):
             super(Config, self).__setitem__(key, new)
             return
 
-        if name in self and isinstance(self[name], dict):
-            if isinstance(value, dict):
-                self[name].update(value)
-                return
+        if self._update_item(name, value):
+            return
 
         super(Config, self).__setitem__(name, value)
+
+    def __contains__(self, key):
+        try:
+            self[key]
+            return True
+        except KeyError:
+            return False
+
+    def _update_item(self, name, value):
+        if name in self and isinstance(self[name], dict):
+            if isinstance(value, dict):
+                new = self[name]
+                new.update(value)
+                super(Config, self).__setitem__(name, new)
+                return True
+        return False
 
     def update(self, data):
         self.is_valid(data)
         for key, value in data.items():
-            if key in self and isinstance(self[key], dict):
-                if isinstance(value, dict):
-                    new = self[key]
-                    new.update(value)
-                    super(Config, self).__setitem__(key, new)
-                    continue
-
+            if self._update_item(key, value):
+                continue
             self[key] = value
