@@ -1,5 +1,6 @@
 from naya.helpers import register
 from naya.testing import *
+from werkzeug.routing import BuildError
 
 from examples import simple
 
@@ -28,4 +29,12 @@ def test_app():
 
     aye('==', 'examples.simple', app.root.import_name)
 
+    url_rules = list(app.root.url_rules)
+    aye('==', 1, len(url_rules))
+    aye('==', 'examples.simple:index', url_rules[0].endpoint)
+    aye('==', '/', url_rules[0].rule)
+
     aye('==', '/', app.url_for(':index'))
+    aye.raises(BuildError, lambda: app.url_for(':jinja', path='index.html'))
+    aye.raises(BuildError, lambda: app.url_for(':theme', path='index.html'))
+
