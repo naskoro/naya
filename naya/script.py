@@ -1,3 +1,7 @@
+import sys
+from subprocess import Popen, PIPE
+
+
 def make_shell(init_func=None, banner=None, use_bpython=True):
     """
     Returns an action callback that spawns a new interactive
@@ -24,3 +28,28 @@ def make_shell(init_func=None, banner=None, use_bpython=True):
         from code import interact
         interact(banner, local=namespace)
     return action
+
+
+def sh(command, capture=False):
+    if isinstance(command, (tuple, list)):
+        command = ' && '.join(command)
+
+    print '$ %s' % command
+
+    stdout = stderr = not capture and PIPE or None
+
+    cmd = Popen([command], stdout=stdout, stderr=stderr, shell=True)
+    try:
+        stdout, stderr = cmd.communicate()
+        code = cmd.returncode
+
+        out = stdout and [stdout] or []
+        out += stderr and [stderr] or []
+        out += cmd.returncode != 0 and ['FAIL with code %r.\n' % code] or []
+        if out:
+            print '\n\n'.join(out)
+    except KeyboardInterrupt:
+        print >> sys.stderr, "\nStopped."
+        sys.exit(1)
+    if code != 0:
+        sys.exit(code)

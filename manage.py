@@ -1,18 +1,18 @@
 #!/usr/bin/env python
-from fabric.api import local
+from naya.script import sh
 from werkzeug.script import run
 
 
 def action_pep8(target='.'):
     '''Run pep8.'''
-    local('pep8 --ignore=E202 %s' % target, capture=False)
+    sh('pep8 --ignore=E202 %s' % target)
 
 
 def action_clean(mask=''):
     '''Clean useless files.'''
     masks = [mask] if mask else ['*.pyc', '*.pyo', '*~', '*.orig']
     command = ('find . -name "%s" -exec rm -f {} +' % mask for mask in masks)
-    local('\n'.join(command), capture=False)
+    sh('\n'.join(command))
 
 
 def action_test(target='', coverage=False):
@@ -23,7 +23,7 @@ def action_test(target='', coverage=False):
     if target:
         command.append(target)
 
-    local(' '.join(command), capture=False)
+    sh(' '.join(command))
 
 
 if __name__ == '__main__':
