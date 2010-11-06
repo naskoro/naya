@@ -23,12 +23,14 @@ def go(method, status_code, *args, **kwargs):
 
 class Aye(object):
     expressions = (
-        ((
-            '==', '!=', '>', '<', '>=', '<=', '<>',
-            'in', 'not in', 'is', 'not is'
-        ), 2, 'args[0] {0} args[1]', '{0!r} {2} {1!r}'),
-        (('', 'true', True, 1), 1, 'args[0]', '{0!r}'),
-        (('not', 'false', False, 0), 1, 'not args[0]', 'not {0!r}'),
+        (('==; !=; >; <; >=; <=; <>; in; not in; is; not is'.split('; ')), 
+            2, 'args[0] {0} args[1]', '{0!r} {2} {1!r}'
+        ),
+        (('', True, 1), 1, 'args[0]', '{0!r}'),
+        (('not', False, 0), 1, 'not args[0]', 'not {0!r}'),
+        (('len', 'not len'),
+            2, '{0}(args[1]) == args[0]', '{2}({1!r}) == {0!r}'
+        ),
     )
 
     def __call__(self, operand, *args, **kwargs):

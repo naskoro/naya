@@ -6,7 +6,7 @@ from . import admin, front
 def prefs():
     return {
         'debug': True,
-        'modules': {
+        'submodules': {
             '': front.mod,
             'admin': admin.mod
         },
@@ -17,4 +17,4 @@ def prefs():
         }
     }
 
-app = App(prefs())
+app = App(__name__, prefs())

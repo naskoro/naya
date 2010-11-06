@@ -28,7 +28,7 @@ class JinjaMixin(object):
                 prefix = prefix.lstrip('/')
                 prefix = '%s%s' % (url_prefix, prefix)
                 prefix = prefix.rstrip('/')
-                self.root.add_route(
+                self.add_route(
                     '%s/<path:path>' % prefix,
                     module.build_endpoint(endpoint),
                     build_only=True

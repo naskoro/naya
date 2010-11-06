@@ -1,10 +1,10 @@
 from naya import Module
 
 
-root = Module(__name__)
+mod = Module(__name__)
 
 
-@root.route('/', defaults={'name': 'world'})
-@root.route('/<name>')
+@mod.route('/', defaults={'name': 'world'})
+@mod.route('/<name>')
 def hello(app, name):
     return 'Hello %s!' % name

@@ -12,11 +12,11 @@ def test_app():
 
     aye(True, hasattr(app, 'jinja'))
 
-    aye('==', 1, len(app.modules))
+    aye('len', 1, app.modules)
     aye('in', '', app.modules)
-    aye('==', app.modules[''], app.root)
+    aye('!=', app.modules[''], app)
 
-    aye('==', 'examples.small.views', app.root.import_name)
+    aye('==', 'examples.small', app.import_name)
 
     aye('==', '/', app.url_for(':hello'))
     aye('==', '/bob', app.url_for(':hello', name='bob'))

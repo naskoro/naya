@@ -71,6 +71,9 @@ class Config(dict):
         return False
 
     def update(self, data):
+        if not data:
+            return
+
         self.is_valid(data)
         for key, value in data.items():
             if self._update_item(key, value):

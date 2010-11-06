@@ -13,21 +13,76 @@ from .helpers import get_package_path, register
 
 
 class Module(object):
-    def __init__(self, import_name, theme=None):
-        if not theme:
-            theme = {'path_suffix': '_theme', 'endpoint': 'theme'}
-        if isinstance(theme, dict):
-            theme = Config(theme)
-
-        self.theme = theme
+    def __init__(self, import_name, prefs=None):
         self.import_name = import_name
-        self.root_path = get_package_path(self.import_name)
-
-        theme_path = self.get_path(theme['path_suffix'])
-        self.theme_path = os.path.isdir(theme_path) and theme_path or None
-
         self.url_map = Map()
         self.url_views = {}
+
+        self.conf = self.get_prefs(prefs)
+
+        self.theme = self.conf['theme']
+        self.root_path = get_package_path(self.import_name)
+
+        theme_path = self.get_path(self.theme['path_suffix'])
+        self.theme_path = os.path.isdir(theme_path) and theme_path or None
+
+        self.modules = Config({'': self})
+        self.modules.update(self.conf['submodules'])
+        self.shares = []
+
+        for func in register.get(self, 'init'):
+            func()
+
+    @register('default_prefs')
+    def default_module_prefs(self):
+        return {
+            'theme': {
+                'path_suffix': '_theme',
+                'endpoint': 'theme',
+                'url_prefix': '/s/',
+            },
+            'submodules': {},
+        }
+
+    def get_prefs(self, prefs_):
+        prefs = Config()
+        for func in register.get(self, 'default_prefs'):
+            prefs.update(func())
+
+        prefs.update(prefs_)
+        return prefs
+
+    @register('init')
+    def init_modules(self):
+        for name, module in self.modules.items():
+            self.url_views.update(module.url_views)
+            self.url_map.add(
+                Submount('/%s' % name, module.url_rules)
+            )
+
+    @register('init')
+    def init_shares(self):
+        shares = []
+        for name, module in self.modules.items():
+            if not module.theme_path:
+                continue
+            prefix = '%s%s' % (self.conf['theme:url_prefix'], name)
+            prefix = '%s' % prefix.rstrip('/')
+            self.add_route(
+                '%s/<path:path>' % prefix,
+                module.build_endpoint(self.conf['theme:endpoint']),
+                build_only=True
+            )
+            shares.append((prefix, module.theme_path))
+            if module.shares:
+                shares += [
+                    ('%s/%s' % (name, share[0]), share[1])
+                    for share in module.shares
+                ]
+
+            self.shares = shares
+
+        self.shares.reverse()
 
     @property
     def url_rules(self):
@@ -71,71 +126,15 @@ class Request(BaseRequest):
     pass
 
 
-class BaseApp(object):
+class BaseApp(Module):
     request_class = Request
     response_class = Response
 
-    def __init__(self, prefs):
-        if isinstance(prefs, basestring):
-            prefs = {'modules': {'': Module(prefs)}}
-
-        self.conf = self.get_prefs(prefs)
-
-        self.root = self.conf['modules:']
-        self.modules = self.conf['modules']
-
-        for init_func in register.get_funcs(self, 'init'):
-            init_func()
-
     @register('default_prefs')
-    def default_prefs(self):
+    def default_app_prefs(self):
         return {
             'debug': False,
-            'theme': {
-                'path_suffix': '_theme',
-                'endpoint': 'theme',
-                'url_prefix': '/s/',
-            },
-            'modules': {},
         }
-
-    def get_prefs(self, prefs_):
-        prefs = Config()
-        for func in register.get_funcs(self, 'default_prefs'):
-            prefs.update(func())
-
-        prefs.update(prefs_)
-        return prefs
-
-    @register('init')
-    def init_modules(self):
-        for name, module in self.modules.items():
-            if self.root == module:
-                continue
-
-            self.root.url_views.update(module.url_views)
-            self.root.url_map.add(
-                Submount('/%s' % name, module.url_rules)
-            )
-
-    @register('init')
-    def init_shares(self):
-        shares = []
-        for name, module in self.modules.items():
-            if not module.theme_path:
-                continue
-            prefix = '%s%s' % (self.conf['theme:url_prefix'], name)
-            prefix = '%s' % prefix.rstrip('/')
-            self.root.add_route(
-                '%s/<path:path>' % prefix,
-                module.build_endpoint(self.conf['theme:endpoint']),
-                build_only=True
-            )
-            shares.append((prefix, module.theme_path))
-
-        shares.reverse()
-        for prefix, path in shares:
-            self.dispatch = SharedDataMiddleware(self.dispatch, {prefix: path})
 
     def url_for(self, endpoint, **values):
         prefix = endpoint.find(':')
@@ -164,12 +163,15 @@ class BaseApp(object):
 
     def pre_dispatch(self, environ):
         self.request = Request(environ)
-        self.url_adapter = self.root.url_map.bind_to_environ(environ)
+        self.url_adapter = self.url_map.bind_to_environ(environ)
+
+        for prefix, path in self.shares:
+            self.dispatch = SharedDataMiddleware(self.dispatch, {prefix: path})
 
     def dispatch(self, environ, start_response):
         try:
             endpoint, values = self.url_adapter.match()
-            handler = self.root.url_views[endpoint]
+            handler = self.url_views[endpoint]
             response = handler(self, **values)
             response = self.make_response(response)
         except HTTPException, e:

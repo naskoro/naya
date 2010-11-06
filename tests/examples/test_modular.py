@@ -10,13 +10,13 @@ def test_app():
     go(c.get, 200, '/')
     app = c.app
 
+    aye('==', 'examples.modular', app.import_name)
     aye(True, hasattr(app, 'jinja'))
 
     aye('==', 2, len(app.modules), app.modules)
     aye('in', '', app.modules)
     aye('in', 'admin', app.modules)
-    aye('==', app.modules[''], app.root)
-    aye('==', 'examples.modular.front', app.root.import_name)
+    aye('==', 'examples.modular.front', app.modules[''].import_name)
     aye('==', 'examples.modular.admin', app.modules['admin'].import_name)
 
     aye('==', '/', app.url_for(':tpl', path=''))

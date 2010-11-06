@@ -11,7 +11,7 @@ class Register(object):
             return func
         return wrap
 
-    def get_funcs(cls, obj, name):
+    def get(cls, obj, name):
         funcs = []
         for attr in dir(obj):
             attr = getattr(obj, attr)

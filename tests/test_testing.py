@@ -17,6 +17,7 @@ def test_aye():
     Traceback (most recent call last):
         ...
     AssertionError: assert 1 != 1
+
     >>> aye(True, 1)
     >>> aye('', 0)
     Traceback (most recent call last):
@@ -51,20 +52,34 @@ def test_aye():
         ...
     AssertionError: assert not 1
     {'m': 'It is not False'}
+
     >>> aye('in', '42', 'answer 42')
     >>> aye('in', '13', 'answer 42')
     Traceback (most recent call last):
         ...
     AssertionError: assert '13' in 'answer 42'
     >>> aye('not in', '13', 'answer 42')
+
+    >>> aye('len', 1, ['1'], message='Cool')
+    >>> aye('len', 0, ['1'], message='It is fail')
+    Traceback (most recent call last):
+        ...
+    AssertionError: assert len(['1']) == 0, It is fail
+    >>> aye('not len', 0, ['1'], message='Cool')
+    >>> aye('not len', 1, ['1'], message='It is fail')
+    Traceback (most recent call last):
+        ...
+    AssertionError: assert not len(['1']) == 1, It is fail
+
     >>> aye('no in', '13', 'answer 42')
     Traceback (most recent call last):
         ...
     AttributeError: Use some of
-    ((('==', '!=', '>', '<', '>=', '<=', '<>', 'in', 'not in', 'is', 'not is'),
+    ((['==', '!=', '>', '<', '>=', '<=', '<>', 'in', 'not in', 'is', 'not is'],
       2,
       'args[0] {0} args[1]',
       '{0!r} {2} {1!r}'),
-     (('', 'true', True, 1), 1, 'args[0]', '{0!r}'),
-     (('not', 'false', False, 0), 1, 'not args[0]', 'not {0!r}'))
+     (('', True, 1), 1, 'args[0]', '{0!r}'),
+     (('not', False, 0), 1, 'not args[0]', 'not {0!r}'),
+     (('len', 'not len'), 2, '{0}(args[1]) == args[0]', '{2}({1!r}) == {0!r}'))
     '''
