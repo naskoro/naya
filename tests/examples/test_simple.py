@@ -16,7 +16,7 @@ def test_app():
     aye('==', 'examples.simple', app.import_name)
 
     aye('len', 3, register.get(app, 'default_prefs'))
-    aye('len', 3,  register.get(app, 'init'))
+    aye('len', 3, register.get(app, 'init'))
 
     aye(False, hasattr(app, 'jinja'))
 
@@ -28,9 +28,6 @@ def test_app():
     aye('==', 'examples.simple:index', url_rules[0].endpoint)
     aye('==', '/', url_rules[0].rule)
 
-    print app.url_map
-
     aye('==', '/', app.url_for(':index'))
     aye.raises(BuildError, lambda: app.url_for(':jinja', path='index.html'))
     aye.raises(BuildError, lambda: app.url_for(':theme', path='index.html'))
-

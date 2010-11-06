@@ -23,7 +23,7 @@ def go(method, status_code, *args, **kwargs):
 
 class Aye(object):
     expressions = (
-        (('==; !=; >; <; >=; <=; <>; in; not in; is; not is'.split('; ')), 
+        (('==; !=; >; <; >=; <=; <>; in; not in; is; not is'.split('; ')),
             2, 'args[0] {0} args[1]', '{0!r} {2} {1!r}'
         ),
         (('', True, 1), 1, 'args[0]', '{0!r}'),
