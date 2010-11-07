@@ -30,7 +30,7 @@ def make_shell(init_func=None, banner=None, use_bpython=True):
     return action
 
 
-def sh(command, capture=False, host=None, params=None, exit=False):
+def sh(command, capture=False, host=None, params=None):
     if isinstance(command, (tuple, list)):
         command = ' && '.join(command)
 
@@ -58,5 +58,5 @@ def sh(command, capture=False, host=None, params=None, exit=False):
     except KeyboardInterrupt:
         print >> sys.stderr, "\nStopped."
         sys.exit(1)
-    if code != 0 or exit:
+    if code != 0:
         sys.exit(code)

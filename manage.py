@@ -34,9 +34,10 @@ def action_test(target='', coverage=False):
 
 def action_deploy(host='yadro.org'):
     '''Deploy code on server.'''
+    sh(('pwd', 'hg push'))
     sh((
         '{activate}', 'cd {naya_path}', 'hg up', 'pip install .'
-    ), host=host, params=SERVER_PARAMS, exit=True)
+    ), host=host, params=SERVER_PARAMS)
 
 
 if __name__ == '__main__':
