@@ -30,11 +30,18 @@ def make_shell(init_func=None, banner=None, use_bpython=True):
     return action
 
 
-def sh(command, capture=False):
+def sh(command, capture=False, host=None, params=None):
     if isinstance(command, (tuple, list)):
         command = ' && '.join(command)
 
-    print '$ %s' % command
+    if params:
+        command = command.format(**params)
+
+    if host:
+        command = command.replace('"', '\\"')
+        command = 'ssh {0} "{1}"'.format(host, command)
+
+    print '$ {0!s}'.format(command)
 
     stdout = stderr = not capture and PIPE or None
 

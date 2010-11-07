@@ -20,4 +20,20 @@ def test_sh():
     Traceback (most recent call last):
         ...
     SystemExit: 2
+    >>> sh('echo {answer}', params={'answer':'42'})
+    $ echo 42
+    42
+    <BLANKLINE>
+    >>> sh('echo "{answer}"', params={'answer': 42})
+    $ echo "42"
+    42
+    <BLANKLINE>
+    >>> sh('echo 42', host='localhost')
+    $ ssh localhost "echo 42"
+    42
+    <BLANKLINE>
+    >>> sh('echo "42"', host='localhost')
+    $ ssh localhost "echo \\"42\\""
+    42
+    <BLANKLINE>
     '''
