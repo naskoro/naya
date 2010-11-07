@@ -10,11 +10,11 @@ def test_app():
     go(c.get, 200, '/')
     app = c.app
 
-    aye(True, hasattr(app, 'jinja'))
+    aye('!=', False, app.jinja)
 
     aye('len', 1, app.modules)
     aye('in', '', app.modules)
-    aye('!=', app.modules[''], app)
+    aye('!=', app.modules[''], (app, ''))
 
     aye('==', 'examples.small', app.import_name)
 

@@ -11,13 +11,20 @@ def test_app():
     app = c.app
 
     aye('==', 'examples.modular', app.import_name)
-    aye(True, hasattr(app, 'jinja'))
+    aye('!=', False, app.jinja)
 
-    aye('==', 2, len(app.modules), app.modules)
-    aye('in', '', app.modules)
-    aye('in', 'admin', app.modules)
-    aye('==', 'examples.modular.front', app.modules[''].import_name)
-    aye('==', 'examples.modular.admin', app.modules['admin'].import_name)
+    aye('==', 4, len(app.modules), app.modules)
+    aye('==', app, app.modules[''][0])
+
+    front = app.modules['front'][0]
+    admin = app.modules['admin'][0]
+    aye('==', 'examples.modular.front', front.import_name)
+    aye('==', 'examples.modular.admin', admin.import_name)
+    aye('==', 'examples.modular.blog', app.modules['blog'][0].import_name)
+
+    aye('==', 2, len(app.shares))
+    aye('==', ('/admin', admin), app.shares[0])
+    aye('==', ('/', front), app.shares[1])
 
     aye('==', '/', app.url_for(':tpl', path=''))
     aye('==', '/', app.url_for(':tpl', path='/'))

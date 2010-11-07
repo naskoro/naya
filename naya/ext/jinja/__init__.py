@@ -2,7 +2,7 @@ import mimetypes
 
 from jinja2 import (
     Environment, TemplateNotFound,
-    PrefixLoader as PrefixLoaderBase, FileSystemLoader
+    PrefixLoader as PrefixLoaderBase, FileSystemLoader, ChoiceLoader
 )
 
 from naya.helpers import register
@@ -11,6 +11,7 @@ from naya.helpers import register
 class JinjaMixin(object):
     @register('init')
     def jinja_init(self):
+        self.jinja = False
         jinja_loaders = {}
 
         shared = self.conf['jinja:shared']
@@ -18,26 +19,33 @@ class JinjaMixin(object):
         url_prefix = self.conf['jinja:url_prefix']
 
         for name, module in self.modules.items():
+            module, prefix = module
             if not module.theme_path:
                 continue
-            prefix = name and '/%s' % name or name
-            jinja_loaders[prefix] = FileSystemLoader(
+
+            prefix = prefix and '/%s' % prefix or prefix
+            loader = FileSystemLoader(
                 module.theme_path
             )
+
+            jinja_loaders.setdefault(prefix, [])
+            jinja_loaders[prefix].append(FileSystemLoader(
+                module.theme_path
+            ))
             if shared:
                 prefix = prefix.lstrip('/')
                 prefix = '%s%s' % (url_prefix, prefix)
-                prefix = prefix.rstrip('/')
-                self.add_route(
-                    '%s/<path:path>' % prefix,
-                    module.build_endpoint(endpoint),
-                    build_only=True
-                )
+                self.share(module, prefix, endpoint)
 
         if jinja_loaders:
+            for prefix, loader in jinja_loaders.items():
+                if isinstance(loader, list):
+                    jinja_loaders[prefix] = ChoiceLoader(loader)
+
             self.jinja = Environment(loader=PrefixLoader(jinja_loaders))
             self.jinja.filters.update(self.conf['jinja:filters'])
             if shared:
+                self.share(self, url_prefix, endpoint)
                 self.dispatch = SharedJinjaMiddleware(
                     self.dispatch, self, url_prefix
                 )

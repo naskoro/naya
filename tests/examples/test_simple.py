@@ -18,10 +18,10 @@ def test_app():
     aye('len', 3, register.get(app, 'default_prefs'))
     aye('len', 3, register.get(app, 'init'))
 
-    aye(False, hasattr(app, 'jinja'))
+    aye('==', False, app.jinja)
 
     aye('==', 1, len(app.modules))
-    aye('==', app.modules[''], app)
+    aye('==', app.modules[''], (app, ''))
 
     url_rules = list(app.url_rules)
     aye('==', 1, len(url_rules))
