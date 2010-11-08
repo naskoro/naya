@@ -24,7 +24,9 @@ def action_test(target='', coverage=False):
     '''Run tests.'''
     command = ['nosetests -v --with-doctest']
     if coverage:
-        command.append('--with-coverage --cover-tests --cover-package=naya')
+        command.append(
+            '--with-coverage --cover-tests --cover-package=naya,examples'
+        )
     if target:
         command.append(target)
 
