@@ -4,7 +4,6 @@ from werkzeug.script import run
 
 
 SERVER_PARAMS = {
-    'activate': 'source /root/.virtualenvs/pusto/bin/activate && which python',
     'naya_path': '/root/repos/naya'
 }
 
@@ -36,7 +35,7 @@ def action_deploy(host='yadro.org'):
     '''Deploy code on server.'''
     sh(('pwd', 'hg push'))
     sh((
-        '{activate}', 'cd {naya_path}', 'hg up', 'pip install .'
+        'cd {naya_path}', 'pwd', 'hg up'
     ), host=host, params=SERVER_PARAMS)
 
 
