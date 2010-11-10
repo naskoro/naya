@@ -12,43 +12,50 @@ class JinjaMixin(object):
     @register('init')
     def jinja_init(self):
         self.jinja = False
-        jinja_loaders = {}
 
-        shared = self.conf['jinja:shared']
+        jinja_loaders = self.jinja_loaders()
+        if not jinja_loaders:
+            return
+
+        self.jinja = Environment(loader=PrefixLoader(jinja_loaders))
+        self.jinja.filters.update(self.conf['jinja:filters'])
+
+        if not self.conf['jinja:shared']:
+            return
+
         endpoint = self.conf['jinja:endpoint']
         url_prefix = self.conf['jinja:url_prefix']
 
-        for name, module in self.modules.items():
-            module, prefix = module
-            if not module.theme_path:
+        for module in [self] + self.modules.values():
+            if not module.theme_path and self!=module:
                 continue
-
-            prefix = prefix and '/%s' % prefix or prefix
-            loader = FileSystemLoader(
-                module.theme_path
+            prefix = '%s%s' % (url_prefix, module.prefix.lstrip('/'))
+            self.add_route(
+                '%s/<path:path>' % prefix.rstrip('/'),
+                module.build_endpoint(endpoint),
+                build_only=True
             )
 
+        self.dispatch = SharedJinjaMiddleware(
+            self.dispatch, self, url_prefix
+        )
+
+    def jinja_loaders(self):
+        jinja_loaders = {}
+        for module in [self] + self.modules.values():
+            if not module.theme_path:
+                continue
+            prefix = module.prefix
+            prefix = prefix and '/%s' % prefix or prefix
             jinja_loaders.setdefault(prefix, [])
             jinja_loaders[prefix].append(FileSystemLoader(
                 module.theme_path
             ))
-            if shared:
-                prefix = prefix.lstrip('/')
-                prefix = '%s%s' % (url_prefix, prefix)
-                self.share(module, prefix, endpoint)
 
-        if jinja_loaders:
-            for prefix, loader in jinja_loaders.items():
-                if isinstance(loader, list):
-                    jinja_loaders[prefix] = ChoiceLoader(loader)
-
-            self.jinja = Environment(loader=PrefixLoader(jinja_loaders))
-            self.jinja.filters.update(self.conf['jinja:filters'])
-            if shared:
-                self.share(self, url_prefix, endpoint)
-                self.dispatch = SharedJinjaMiddleware(
-                    self.dispatch, self, url_prefix
-                )
+        for prefix, loader in jinja_loaders.items():
+            if isinstance(loader, list):
+                jinja_loaders[prefix] = ChoiceLoader(loader)
+        return jinja_loaders
 
     @register('default_prefs')
     def jinja_prefs(self):

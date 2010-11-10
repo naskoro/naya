@@ -10,13 +10,14 @@ def test_app():
     go(c.get, 200, '/')
     app = c.app
 
+    aye('==', 'examples.small', app.import_name)
     aye('!=', False, app.jinja)
 
     aye('len', 1, app.modules)
-    aye('in', '', app.modules)
-    aye('!=', app.modules[''], (app, ''))
 
-    aye('==', 'examples.small', app.import_name)
+    mod = app.modules['']
+    aye('==', ('', ''), (mod.name, mod.prefix))
+    aye('==', 'examples.small.views', mod.import_name)
 
     aye('==', '/', app.url_for(':hello'))
     aye('==', '/bob', app.url_for(':hello', name='bob'))

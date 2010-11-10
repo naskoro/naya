@@ -5,10 +5,10 @@ from . import admin, front, blog
 
 app = App(__name__, {
     'debug': True,
-    'submodules': {
-        'front': (front.mod, ''),
-        'blog': (blog.mod, ''),
-        'admin': admin.mod
+    'modules': {
+        'front': front.mod(prefix=''),
+        'blog': blog.mod(prefix=''),
+        'admin': admin.mod(prefix='admin')
     },
     'jinja': {
         'endpoint': 'tpl',

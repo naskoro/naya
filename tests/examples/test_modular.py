@@ -13,18 +13,19 @@ def test_app():
     aye('==', 'examples.modular', app.import_name)
     aye('!=', False, app.jinja)
 
-    aye('==', 4, len(app.modules), app.modules)
-    aye('==', app, app.modules[''][0])
+    aye('==', 3, len(app.modules), app.modules)
 
-    front = app.modules['front'][0]
-    admin = app.modules['admin'][0]
+    front = app.modules['front']
+    blog = app.modules['blog']
+    admin = app.modules['admin']
+
+    aye('==', ('front', ''), (front.name, front.prefix))
+    aye('==', ('blog', ''), (blog.name, blog.prefix))
+    aye('==', ('admin', 'admin'), (admin.name, admin.prefix))
+
     aye('==', 'examples.modular.front', front.import_name)
+    aye('==', 'examples.modular.blog', blog.import_name)
     aye('==', 'examples.modular.admin', admin.import_name)
-    aye('==', 'examples.modular.blog', app.modules['blog'][0].import_name)
-
-    aye('==', 2, len(app.shares))
-    aye('==', ('/admin', admin), app.shares[0])
-    aye('==', ('/', front), app.shares[1])
 
     aye('==', '/', app.url_for(':tpl', path=''))
     aye('==', '/', app.url_for(':tpl', path='/'))
@@ -40,6 +41,10 @@ def test_app():
     aye('==', '/s/admin/index.html',
         app.url_for(':theme', path='admin/index.html')
     )
+
+    aye('==', '/repos/', app.url_for('front:repos.list'))
+    aye('==', '/dashboard/', app.url_for('front:dashboard'))
+    aye('==', '/admin/dashboard/', app.url_for('admin:dashboard'))
 
 
 def test_urls():
@@ -70,5 +75,15 @@ def test_urls():
 
     rv = go(c.get, 200, '/admin/test')
     aye('in', 'text/html', rv.content_type)
+
+    rv = go(c.get, 200, '/repos/')
+    aye('in', 'modular.front.repos.list', rv.data)
+
+    rv = go(c.get, 200, '/dashboard/')
+    aye('in', 'modular.front.dashboard', rv.data)
+
+    rv = go(c.get, 301, '/admin/dashboard')
+    rv = go(c.get, 200, '/admin/dashboard', follow_redirects=True)
+    aye('in', 'modular.admin.dashboard', rv.data)
 
     go(c.get, 404, '/admin/not_found')
