@@ -1,9 +1,11 @@
 import mimetypes
+import re
 
 from jinja2 import (
     Environment, TemplateNotFound,
     PrefixLoader as PrefixLoaderBase, FileSystemLoader, ChoiceLoader
 )
+from werkzeug import redirect
 
 from naya.helpers import register
 
@@ -27,7 +29,7 @@ class JinjaMixin(object):
         url_prefix = self.conf['jinja:url_prefix']
 
         for module in [self] + self.modules.values():
-            if not module.theme_path and self!=module:
+            if not module.theme_path and self != module:
                 continue
             prefix = '%s%s' % (url_prefix, module.prefix.lstrip('/'))
             self.add_route(
@@ -74,9 +76,9 @@ class PrefixLoader(PrefixLoaderBase):
     def get_source(self, environment, template):
         for prefix, loader in self.mapping.items():
             path = template
+            path = '/%s' % path.lstrip('/')
             if path.startswith(prefix):
                 path = template[len(prefix):]
-            path = path.lstrip('/')
             try:
                 return loader.get_source(environment, path)
             except TemplateNotFound:
@@ -92,15 +94,15 @@ class SharedJinjaMiddleware(object):
         self.context = context
 
     def __call__(self, environ, start_response):
-        path = environ.get('PATH_INFO', '/')
+        base_path = environ.get('PATH_INFO', '/')
         template = None
-        if path.startswith(self.prefix):
-            path = path[len(self.prefix):]
+        if base_path.startswith(self.prefix):
+            path = base_path[len(self.prefix):]
             path = '/%s' % path.strip('/')
             path = path.rstrip('/')
 
             path_ends = self.app.conf['jinja:path_ends']
-            paths = path_ends and [path + item for item in path_ends] or []
+            paths = path_ends and [path + end for end in path_ends] or []
             paths = [path] + paths
 
             try:
@@ -111,12 +113,26 @@ class SharedJinjaMiddleware(object):
         if not template:
             return self.dispatch(environ, start_response)
 
-        path = template.name
+        real_path = template.name
+        main_path = real_path
+        for end in path_ends:
+            pattern = '%s$' % re.escape(end)
+            if re.search(pattern, real_path):
+                main_path = re.sub(pattern , '/', real_path)
+                break
 
-        guessed_type = mimetypes.guess_type(path)
+        main_path = main_path.lstrip('/')
+        full_path = self.app.url_for(
+                ':%s' % self.app.conf['jinja:endpoint'], path=main_path
+            )
+        if base_path != full_path:
+            response = redirect(full_path)
+            return response(environ, start_response)
+
+        guessed_type = mimetypes.guess_type(real_path)
         mime_type = guessed_type[0] or 'text/plain'
 
-        context = {'app': self.app, 'template': path.lstrip('/')}
+        context = {'app': self.app, 'template': real_path.lstrip('/')}
         context.update(self.context)
 
         template = template.render(context)

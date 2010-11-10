@@ -13,6 +13,6 @@ app = App(__name__, {
     'jinja': {
         'endpoint': 'tpl',
         'url_prefix': '/',
-        'path_ends': ['.html', '/index.html']
+        'path_ends': ['/index.html']
     }
 })

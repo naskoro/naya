@@ -7,7 +7,6 @@ c = Client(modular.app)
 
 
 def test_app():
-    go(c.get, 200, '/')
     app = c.app
 
     aye('==', 'examples.modular', app.import_name)
@@ -26,6 +25,11 @@ def test_app():
     aye('==', 'examples.modular.front', front.import_name)
     aye('==', 'examples.modular.blog', blog.import_name)
     aye('==', 'examples.modular.admin', admin.import_name)
+
+
+def test_url_for():
+    go(c.get, 200, '/')
+    app = c.app
 
     aye('==', '/', app.url_for(':tpl', path=''))
     aye('==', '/', app.url_for(':tpl', path='/'))
@@ -49,16 +53,22 @@ def test_app():
 
 def test_urls():
     rv = go(c.get, 200, '/')
-    aye('in', 'front', rv.data)
+    aye('in', 'from front', rv.data)
 
     rv = go(c.get, 200, '/admin/')
-    aye('in', 'admin', rv.data)
+    aye('in', 'text/html', rv.content_type)
+    aye('in', 'from admin', rv.data)
 
     rv = go(c.get, 200, '/admin/base.html')
     aye('in', 'front', rv.data)
 
+    rv = go(c.get, 302, '/admin/base')
+    rv = go(c.get, 200, '/admin/base/')
+    aye('in', 'text/html', rv.content_type)
+    aye('in', 'admin', rv.data)
+
     rv = go(c.get, 200, '/admin/test.html')
-    aye('in', 'front', rv.data)
+    aye('in', 'from front', rv.data)
 
     rv = go(c.get, 200, '/s/admin/base.html')
     aye('not in', 'admin', rv.data)
@@ -68,13 +78,6 @@ def test_urls():
 
     rv = go(c.get, 200, '/s/admin/index.html')
     aye('in', 'admin', rv.data)
-
-    rv = go(c.get, 200, '/admin/base')
-    aye('in', 'text/html', rv.content_type)
-    aye('in', 'admin/base.html', rv.data)
-
-    rv = go(c.get, 200, '/admin/test')
-    aye('in', 'text/html', rv.content_type)
 
     rv = go(c.get, 200, '/repos/')
     aye('in', 'modular.front.repos.list', rv.data)
@@ -87,3 +90,4 @@ def test_urls():
     aye('in', 'modular.admin.dashboard', rv.data)
 
     go(c.get, 404, '/admin/not_found')
+    go(c.get, 404, '/admin/base/index')

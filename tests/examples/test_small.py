@@ -30,12 +30,19 @@ def test_urls():
     rv = go(c.get, 200, '/')
     aye('in', 'Hello world!', rv.data)
 
-    rv = go(c.get, 200, '/t/index.html')
+    rv = go(c.get, 302, '/t/index.html/')
+    rv = go(c.get, 302, '/t/index.html')
+    rv = go(c.get, 302, '/t/index')
+    rv = go(c.get, 302, '/t/index/')
+
+    rv = go(c.get, 200, '/t/index/', follow_redirects=True)
     aye('in', '/static/index.html', rv.data)
+
+    rv2 = go(c.get, 200, '/t/')
+    aye('==', rv.response, rv2.response)
 
     rv = go(c.get, 200, '/static/index.html')
     aye('in', '{{ template }}', rv.data)
 
-    go(c.get, 404, '/t/')
-    go(c.get, 404, '/t/index')
+    go(c.get, 404, '/t/index.txt')
     go(c.get, 404, '/t/not_found')

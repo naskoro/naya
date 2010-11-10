@@ -166,7 +166,7 @@ class BaseApp(Module):
         if prefix == -1:
             endpoint = endpoint
         else:
-            suffix = endpoint[prefix+1:]
+            suffix = endpoint[prefix + 1:]
             prefix = endpoint[0:prefix]
 
             modules = self.modules.copy()
