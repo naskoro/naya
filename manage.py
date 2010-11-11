@@ -20,13 +20,23 @@ def action_clean(mask=''):
     sh('\n'.join(command))
 
 
-def action_test(target='', coverage=('c', False), package=('p', 'naya')):
+def action_test(target='', clean=False, failed=('f', False),
+                with_coverage=('c', False), cover_package=('p', 'naya')):
     '''Run tests.'''
-    command = ['nosetests -v --with-doctest']
-    if coverage:
+    if clean:
+        command = ['nosetests']
+    else:
+        command = ['nosetests -v --with-doctest']
+
+    if failed:
+        command.append('--failed')
+    if with_coverage:
         command.append('--with-coverage --cover-tests')
-    if package:
-        command.append('--cover-package={0}'.format(package))
+    if cover_package:
+        command.append('--cover-package={0}'.format(cover_package))
+
+    command.append('--with-id')
+
     if target:
         command.append(target)
 
