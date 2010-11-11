@@ -20,13 +20,13 @@ def action_clean(mask=''):
     sh('\n'.join(command))
 
 
-def action_test(target='', coverage=False):
+def action_test(target='', coverage=('c', False), package=('p', 'naya')):
     '''Run tests.'''
     command = ['nosetests -v --with-doctest']
     if coverage:
-        command.append(
-            '--with-coverage --cover-tests --cover-package=naya,examples'
-        )
+        command.append('--with-coverage --cover-tests')
+    if package:
+        command.append('--cover-package={0}'.format(package))
     if target:
         command.append(target)
 
