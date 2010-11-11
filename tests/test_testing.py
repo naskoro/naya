@@ -1,6 +1,6 @@
 def test_aye():
     '''
-    FAIL: Need Doctest for test_testing.test_aye;
+    NOTICE: Need Doctest for test_testing.test_aye;
 
     >>> from naya.testing import aye
     >>> aye('==', 1, 1)

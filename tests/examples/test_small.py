@@ -1,15 +1,12 @@
-from naya.testing import *
+from naya.testing import aye
 
-from examples import small
+from examples.small import app
 
 
-c = Client(small.app)
+c = app.test_client()
 
 
 def test_app():
-    go(c.get, 200, '/')
-    app = c.app
-
     aye('==', 'examples.small', app.import_name)
     aye('!=', False, app.jinja)
 
@@ -19,6 +16,10 @@ def test_app():
     aye('==', ('', ''), (mod.name, mod.prefix))
     aye('==', 'examples.small.views', mod.import_name)
 
+
+def test_url_for():
+    c.get('/', code=200)
+
     aye('==', '/', app.url_for(':hello'))
     aye('==', '/bob', app.url_for(':hello', name='bob'))
     aye('==', '/t/', app.url_for(':jinja', path=''))
@@ -27,22 +28,20 @@ def test_app():
 
 
 def test_urls():
-    rv = go(c.get, 200, '/')
-    aye('in', 'Hello world!', rv.data)
+    c.get('/', code=200)
+    aye('in', 'Hello world!', c.data)
 
-    rv = go(c.get, 302, '/t/index.html/')
-    rv = go(c.get, 302, '/t/index.html')
-    rv = go(c.get, 302, '/t/index')
-    rv = go(c.get, 302, '/t/index/')
+    c.get('/t/index.html/', code=302)
+    c.get('/t/index.html', code=302)
+    c.get('/t/index', code=302)
+    c.get('/t/index/', code=302)
 
-    rv = go(c.get, 200, '/t/index/', follow_redirects=True)
-    aye('in', '/static/index.html', rv.data)
+    c.get('/t/index/', code=200, follow_redirects=True)
+    aye('==', '/t/', c.path)
+    aye('in', '/static/index.html', c.data)
 
-    rv2 = go(c.get, 200, '/t/')
-    aye('==', rv.response, rv2.response)
+    c.get('/static/index.html', code=200)
+    aye('in', '{{ template }}', c.data)
 
-    rv = go(c.get, 200, '/static/index.html')
-    aye('in', '{{ template }}', rv.data)
-
-    go(c.get, 404, '/t/index.txt')
-    go(c.get, 404, '/t/not_found')
+    c.get('/t/index.txt', code=404)
+    c.get('/t/not_found', code=404)

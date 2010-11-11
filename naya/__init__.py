@@ -10,6 +10,7 @@ from werkzeug.routing import Map, Rule, Submount
 from .conf import Config
 from .ext.jinja import JinjaMixin
 from .helpers import get_package_path, register
+from .testing import Client
 
 
 class UrlMap(object):
@@ -176,6 +177,9 @@ class BaseApp(Module):
                 module = modules[prefix]
                 endpoint = '{0}.{1}'.format(module.import_name, suffix)
         return self.url_adapter.build(endpoint, values)
+
+    def test_client(self, *args, **kwargs):
+        return Client(self, *args, **kwargs)
 
     def make_response(self, response):
         """

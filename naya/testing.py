@@ -1,24 +1,39 @@
 from nose import tools
 from werkzeug.test import Client as BaseClient
 
-from . import Response
 from .helpers import pformat
 
 
 class Client(BaseClient):
     def __init__(self, *args, **kwargs):
-        if 'response_wrapper' not in kwargs and len(args) == 1:
-            kwargs['response_wrapper'] = Response
         super(Client, self).__init__(*args, **kwargs)
+
         self.app = self.application
+        if 'response_wrapper' not in kwargs and len(args) == 1:
+            self.response_wrapper = self.app.response_class
 
+    def open(self, *args, **kwargs):
+        code = kwargs.pop('code', None)
+        as_tuple = kwargs.pop('as_tuple', False)
 
-def go(method, status_code, *args, **kwargs):
-    '''Helper for checking status code.'''
-    rv = method(*args, **kwargs)
-    kwargs['rv.data'] = rv.data
-    aye('==', rv.status_code, status_code, *args, **kwargs)
-    return rv
+        kwargs['as_tuple'] = True
+        environ, response = super(Client, self).open(*args, **kwargs)
+
+        if code:
+            aye('==', code, response.status_code, *args, **kwargs)
+
+        self.response = response
+        self.request = self.app.request_class(environ)
+        if as_tuple:
+            return environ, response
+        return response
+
+    def __getattribute__(self, name):
+        if name in ['data', 'content_type', 'status_code', 'headers']:
+            return getattr(self.response, name)
+        if name in ['path', 'url']:
+            return getattr(self.request, name)
+        return BaseClient.__getattribute__(self, name)
 
 
 class Aye(object):

@@ -1,6 +1,6 @@
 def test_sh():
     '''
-    FAIL: Need Doctest for test_script.test_sh;
+    NOTICE: Need Doctest for test_script.test_sh;
 
     >>> from naya.script import sh
     >>> sh('cd ~')

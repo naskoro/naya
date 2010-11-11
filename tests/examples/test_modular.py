@@ -1,18 +1,16 @@
-from naya.testing import *
+from naya.testing import aye
 
-from examples import modular
+from examples.modular import app
 
 
-c = Client(modular.app)
+c = app.test_client()
 
 
 def test_app():
-    app = c.app
-
     aye('==', 'examples.modular', app.import_name)
     aye('!=', False, app.jinja)
 
-    aye('==', 3, len(app.modules), app.modules)
+    aye('len', 3, app.modules)
 
     front = app.modules['front']
     blog = app.modules['blog']
@@ -28,8 +26,7 @@ def test_app():
 
 
 def test_url_for():
-    go(c.get, 200, '/')
-    app = c.app
+    c.get('/', code=200)
 
     aye('==', '/', app.url_for(':tpl', path=''))
     aye('==', '/', app.url_for(':tpl', path='/'))
@@ -52,42 +49,42 @@ def test_url_for():
 
 
 def test_urls():
-    rv = go(c.get, 200, '/')
-    aye('in', 'from front', rv.data)
+    c.get('/', code=200)
+    aye('in', 'from front', c.data)
 
-    rv = go(c.get, 200, '/admin/')
-    aye('in', 'text/html', rv.content_type)
-    aye('in', 'from admin', rv.data)
+    c.get('/admin/', code=200)
+    aye('in', 'text/html', c.content_type)
+    aye('in', 'from admin', c.data)
 
-    rv = go(c.get, 200, '/admin/base.html')
-    aye('in', 'front', rv.data)
+    c.get('/admin/base.html', code=200)
+    aye('in', 'front', c.data)
 
-    rv = go(c.get, 302, '/admin/base')
-    rv = go(c.get, 200, '/admin/base/')
-    aye('in', 'text/html', rv.content_type)
-    aye('in', 'admin', rv.data)
+    c.get('/admin/base', code=302)
+    c.get('/admin/base/', code=200)
+    aye('in', 'text/html', c.content_type)
+    aye('in', 'admin', c.data)
 
-    rv = go(c.get, 200, '/admin/test.html')
-    aye('in', 'from front', rv.data)
+    c.get('/admin/test.html', code=200)
+    aye('in', 'from front', c.data)
 
-    rv = go(c.get, 200, '/s/admin/base.html')
-    aye('not in', 'admin', rv.data)
+    c.get('/s/admin/base.html', code=200)
+    aye('not in', 'admin', c.data)
 
-    rv = go(c.get, 200, '/s/admin/test.html')
-    aye('not in', 'admin', rv.data)
+    c.get('/s/admin/test.html', code=200)
+    aye('not in', 'admin', c.data)
 
-    rv = go(c.get, 200, '/s/admin/index.html')
-    aye('in', 'admin', rv.data)
+    c.get('/s/admin/index.html', code=200)
+    aye('in', 'admin', c.data)
 
-    rv = go(c.get, 200, '/repos/')
-    aye('in', 'modular.front.repos.list', rv.data)
+    c.get('/repos/', code=200)
+    aye('in', 'modular.front.repos.list', c.data)
 
-    rv = go(c.get, 200, '/dashboard/')
-    aye('in', 'modular.front.dashboard', rv.data)
+    c.get('/dashboard/', code=200)
+    aye('in', 'modular.front.dashboard', c.data)
 
-    rv = go(c.get, 301, '/admin/dashboard')
-    rv = go(c.get, 200, '/admin/dashboard', follow_redirects=True)
-    aye('in', 'modular.admin.dashboard', rv.data)
+    c.get('/admin/dashboard', code=301)
+    c.get('/admin/dashboard', follow_redirects=True)
+    aye('in', 'modular.admin.dashboard', c.data)
 
-    go(c.get, 404, '/admin/not_found')
-    go(c.get, 404, '/admin/base/index')
+    c.get('/admin/not_found', code=404)
+    c.get('/admin/base/index', code=404)

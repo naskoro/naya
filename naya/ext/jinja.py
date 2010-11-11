@@ -118,7 +118,7 @@ class SharedJinjaMiddleware(object):
         for end in path_ends:
             pattern = '%s$' % re.escape(end)
             if re.search(pattern, real_path):
-                main_path = re.sub(pattern , '/', real_path)
+                main_path = re.sub(pattern, '/', real_path)
                 break
 
         main_path = main_path.lstrip('/')
