@@ -83,7 +83,8 @@ def test_urls():
     aye('in', 'modular.front.dashboard', c.data)
 
     c.get('/admin/dashboard', code=301)
-    c.get('/admin/dashboard', follow_redirects=True)
+    c.get(c.path, code=200, follow_redirects=True)
+    aye('==', '/admin/dashboard/', c.path)
     aye('in', 'modular.admin.dashboard', c.data)
 
     c.get('/admin/not_found', code=404)
