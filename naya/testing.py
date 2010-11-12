@@ -1,4 +1,3 @@
-from nose import tools
 from werkzeug.test import Client as BaseClient
 
 from .helpers import pformat
@@ -75,6 +74,7 @@ class Aye(object):
         raise AttributeError('Use some of\n%s' % pformat(self.expressions))
 
     def raises(self, *args, **kwargs):
+        from nose import tools
         tools.assert_raises(*args, **kwargs)
 
 aye = Aye()
