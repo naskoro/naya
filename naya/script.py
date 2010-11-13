@@ -30,33 +30,49 @@ def make_shell(init_func=None, banner=None, use_bpython=True):
     return action
 
 
-def sh(command, capture=False, host=None, params=None):
-    if isinstance(command, (tuple, list)):
-        command = ' && '.join(command)
+class Shell(object):
+    def __init__(self, *args, **kwargs):
+        self.defaults(*args, **kwargs)
 
-    if params:
-        command = command.format(**params)
+    def defaults(self, capture=False, host=None, params=None):
+        self.params = params
+        self.host = host
+        self.capture = capture
 
-    if host:
-        command = command.replace('"', '\\"')
-        command = 'ssh {0} "{1}"'.format(host, command)
+    def __call__(self, command, capture=False, host=None, params=None):
+        capture = capture if capture != None else self.capture
+        host = host if host != None else self.host
+        params = params if params != None else self.params
 
-    print '$ {0!s}'.format(command)
+        if isinstance(command, (tuple, list)):
+            command = ' && '.join(command)
 
-    stdout = stderr = not capture and PIPE or None
+        if params:
+            command = command.format(**params)
 
-    cmd = Popen([command], stdout=stdout, stderr=stderr, shell=True)
-    try:
-        stdout, stderr = cmd.communicate()
-        code = cmd.returncode
+        if host:
+            command = command.replace('"', '\\"')
+            command = 'ssh {0} "{1}"'.format(host, command)
 
-        out = stdout and [stdout] or []
-        out += stderr and [stderr] or []
-        out += cmd.returncode != 0 and ['FAIL with code %r.\n' % code] or []
-        if out:
-            print '\n\n'.join(out)
-    except KeyboardInterrupt:
-        print >> sys.stderr, "\nStopped."
-        sys.exit(1)
-    if code != 0:
-        sys.exit(code)
+        print '$ {0!s}'.format(command)
+
+        stdout = stderr = not capture and PIPE or None
+
+        cmd = Popen([command], stdout=stdout, stderr=stderr, shell=True)
+        try:
+            stdout, stderr = cmd.communicate()
+            code = cmd.returncode
+
+            out = stdout and [stdout] or []
+            out += stderr and [stderr] or []
+            if cmd.returncode != 0:
+                out += ['FAIL with code %r.\n' % code]
+            if out:
+                print '\n\n'.join(out)
+        except KeyboardInterrupt:
+            print >> sys.stderr, "\nStopped."
+            sys.exit(1)
+        if code != 0:
+            sys.exit(code)
+
+sh = Shell()

@@ -36,4 +36,20 @@ def test_sh():
     $ ssh localhost "echo \\"42\\""
     42
     <BLANKLINE>
+    >>> sh.defaults(params={'answer': '42'})
+    >>> sh('echo {answer}')
+    $ echo 42
+    42
+    <BLANKLINE>
+    >>> sh('echo {answer}', params={'answer': 'not 42'})
+    $ echo not 42
+    not 42
+    <BLANKLINE>
+    >>> sh('echo {answer}', capture=True)
+    $ echo 42
+    >>> sh.defaults(capture=True)
+    >>> sh('echo 42', capture=False)
+    $ echo 42
+    42
+    <BLANKLINE>
     '''
