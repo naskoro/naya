@@ -3,9 +3,9 @@ from naya.script import sh
 from werkzeug.script import run
 
 
-SERVER_PARAMS = {
+sh.defaults(params={
     'naya_path': '/root/repos/naya'
-}
+})
 
 
 def action_pep8(target='.'):
@@ -48,7 +48,7 @@ def action_deploy(host='yadro.org'):
     sh(('pwd', 'hg push'))
     sh((
         'cd {naya_path}', 'pwd', 'hg up'
-    ), host=host, params=SERVER_PARAMS)
+    ), host=host)
 
 
 if __name__ == '__main__':
