@@ -87,5 +87,7 @@ def test_urls():
     aye('==', '/admin/dashboard/', c.path)
     aye('in', 'modular.admin.dashboard', c.data)
 
+    c.get('/text.txt', code=404)
+    c.get('/main.css', code=404)
     c.get('/admin/not_found', code=404)
     c.get('/admin/base/index', code=404)

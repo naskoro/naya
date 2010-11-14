@@ -11,6 +11,20 @@ from naya.helpers import register
 
 
 class JinjaMixin(object):
+    @register('default_prefs')
+    def jinja_prefs(self):
+        return {
+            'jinja': {
+                'shared': True,
+                'endpoint': 'jinja',
+                'url_prefix': '/t/',
+                'path_ends': [],
+                'path_allow': ['*.css', '*.js'],
+                'path_deny': [],
+                'filters': {},
+            }
+        }
+
     @register('init')
     def jinja_init(self):
         self.jinja = False
@@ -59,17 +73,10 @@ class JinjaMixin(object):
                 jinja_loaders[prefix] = ChoiceLoader(loader)
         return jinja_loaders
 
-    @register('default_prefs')
-    def jinja_prefs(self):
-        return {
-            'jinja': {
-                'shared': True,
-                'endpoint': 'jinja',
-                'url_prefix': '/t/',
-                'path_ends': [],
-                'filters': {},
-            }
-        }
+    def render_to(self, template_name, **context):
+        context.setdefault('app', self)
+        template = self.jinja.get_template(template_name)
+        return template.render(**context)
 
 
 class PrefixLoader(PrefixLoaderBase):
@@ -93,6 +100,21 @@ class SharedJinjaMiddleware(object):
         self.prefix = prefix
         self.context = context
 
+    def is_allow_path(self, path):
+        def prepare(pattern):
+            pattern = re.escape(pattern)
+            pattern = pattern.replace(r'\*', '.*')
+            return pattern
+
+        path = path.lstrip('/')
+        for pattern in self.app.conf['jinja:path_deny']:
+            if re.match(prepare(pattern), path):
+                return False
+        for pattern in self.app.conf['jinja:path_allow']:
+            if re.match(prepare(pattern), path):
+                return True
+        return False
+
     def __call__(self, environ, start_response):
         base_path = environ.get('PATH_INFO', '/')
         template = None
@@ -110,7 +132,7 @@ class SharedJinjaMiddleware(object):
             except TemplateNotFound:
                 template = None
 
-        if not template:
+        if not template or not self.is_allow_path(template.name):
             return self.dispatch(environ, start_response)
 
         real_path = template.name

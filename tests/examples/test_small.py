@@ -40,8 +40,31 @@ def test_urls():
     aye('==', '/t/', c.path)
     aye('in', '/static/index.html', c.data)
 
+    c.get('/t/main.css', code=200)
+    c.get('/t/main.js', code=200)
+
     c.get('/static/index.html', code=200)
     aye('in', '{{ template }}', c.data)
 
-    c.get('/t/index.txt', code=404)
+    c.get('/t/text.txt', code=404)
     c.get('/t/not_found', code=404)
+
+
+def test_jinja_shared():
+    app.conf['jinja:path_deny'] = []
+    c.get('/t/text.txt', code=200)
+    c.get('/t/', code=200)
+
+    app.conf['jinja:path_deny'] = ['*.*']
+    c.get('/t/text.txt', code=404)
+    c.get('/t/', code=404)
+
+    app.conf['jinja:path_allow'] = ['*.txt']
+    app.conf['jinja:path_deny'] = []
+    c.get('/t/text.txt', code=200)
+    c.get('/t/', code=404)
+
+    app.conf['jinja:path_allow'] = ['*']
+    app.conf['jinja:path_deny'] = ['*.html']
+    c.get('/t/text.txt', code=200)
+    c.get('/t/', code=404)
