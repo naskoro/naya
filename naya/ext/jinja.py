@@ -40,6 +40,7 @@ class JinjaAppMixin(object):
                 'path_allow': ['*.css', '*.js'],
                 'path_deny': [],
                 'filters': {},
+                'prefix_separator': ':'
             }
         }
 
@@ -51,7 +52,9 @@ class JinjaAppMixin(object):
         if not jinja_loaders:
             return
 
-        self.jinja = Environment(loader=PrefixLoader(jinja_loaders))
+        loader = PrefixLoader(jinja_loaders)
+        loader.prefix_separator = self.conf['jinja:prefix_separator']
+        self.jinja = Environment(loader=loader)
         self.jinja.filters.update(self.conf['jinja:filters'])
 
         if not self.conf['jinja:shared']:
@@ -98,12 +101,17 @@ class JinjaAppMixin(object):
 
 
 class PrefixLoader(PrefixLoaderBase):
+    prefix_separator = ':'
+
     def get_source(self, environment, template):
         for prefix, loader in self.mapping.items():
             path = template
             path = '/%s' % path.lstrip('/')
             if path.startswith(prefix):
                 path = template[len(prefix):]
+                if path.startswith(self.prefix_separator):
+                    path = '/%s' % path[1:]
+                    loader.get_source(environment, path)
             try:
                 return loader.get_source(environment, path)
             except TemplateNotFound:
@@ -172,7 +180,12 @@ class SharedJinjaMiddleware(object):
         guessed_type = mimetypes.guess_type(real_path)
         mime_type = guessed_type[0] or 'text/plain'
 
-        context = {'app': self.app, 'template': real_path.lstrip('/')}
+        real_path = real_path.lstrip('/')
+        real_path = real_path.replace(
+            self.app.conf['jinja:prefix_separator'], '/'
+        )
+
+        context = {'app': self.app, 'template': real_path}
         context.update(self.context)
 
         template = template.render(context)

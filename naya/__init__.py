@@ -222,5 +222,6 @@ class BaseApp(BaseModule):
 class App(BaseApp, JinjaModuleMixin, JinjaAppMixin):
     pass
 
+
 class Module(BaseModule, JinjaModuleMixin):
     pass
