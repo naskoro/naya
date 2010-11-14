@@ -14,8 +14,8 @@ def test_app():
     aye('==', ('', ''), (app.name, app.prefix))
 
     aye('==', False, app.jinja)
-    aye('len', 3, register.get(app, 'default_prefs'))
-    aye('len', 4, register.get(app, 'init'))
+    aye('len', 4, register.get(app, 'defaults'))
+    aye('len', 5, register.get(app, 'init'))
     aye('len', 0, app.modules)
 
     url_rules = list(app.url_rules)

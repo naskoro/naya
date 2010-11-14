@@ -1,4 +1,5 @@
 import mimetypes
+import os
 import re
 
 from jinja2 import (
@@ -10,9 +11,26 @@ from werkzeug import redirect
 from naya.helpers import register
 
 
-class JinjaMixin(object):
-    @register('default_prefs')
-    def jinja_prefs(self):
+class JinjaModuleMixin(object):
+    @classmethod
+    @register('defaults')
+    def jinja_module_defaults(cls):
+        return {
+            'jinja': {
+                'path_suffix': '_theme'
+            }
+        }
+
+    @register('init', 1)
+    def jinja_module_init(self):
+        tpl_path = self.get_path(self.conf['jinja:path_suffix'])
+        self.tpl_path = os.path.isdir(tpl_path) and tpl_path or None
+
+
+class JinjaAppMixin(object):
+    @classmethod
+    @register('defaults')
+    def jinja_app_defaults(cls):
         return {
             'jinja': {
                 'shared': True,
@@ -26,7 +44,7 @@ class JinjaMixin(object):
         }
 
     @register('init')
-    def jinja_init(self):
+    def jinja_app_init(self):
         self.jinja = False
 
         jinja_loaders = self.jinja_loaders()
@@ -43,7 +61,7 @@ class JinjaMixin(object):
         url_prefix = self.conf['jinja:url_prefix']
 
         for module in [self] + self.modules.values():
-            if not module.theme_path and self != module:
+            if not module.tpl_path and self != module:
                 continue
             prefix = '%s%s' % (url_prefix, module.prefix.lstrip('/'))
             self.add_route(
@@ -59,13 +77,13 @@ class JinjaMixin(object):
     def jinja_loaders(self):
         jinja_loaders = {}
         for module in [self] + self.modules.values():
-            if not module.theme_path:
+            if not module.tpl_path:
                 continue
             prefix = module.prefix
             prefix = prefix and '/%s' % prefix or prefix
             jinja_loaders.setdefault(prefix, [])
             jinja_loaders[prefix].append(FileSystemLoader(
-                module.theme_path
+                module.tpl_path
             ))
 
         for prefix, loader in jinja_loaders.items():

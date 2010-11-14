@@ -7,6 +7,7 @@ app = App(__name__, {
     'debug': True,
     'modules': {'': views.mod},
     'theme': {
+        'path_suffix': '_static',
         'endpoint': 'static',
         'url_prefix': '/static'
     },

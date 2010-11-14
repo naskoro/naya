@@ -40,8 +40,10 @@ def test_urls():
     aye('==', '/t/', c.path)
     aye('in', '/static/index.html', c.data)
 
-    c.get('/t/main.css', code=200)
-    c.get('/t/main.js', code=200)
+    c.get('/static/main.css', code=200)
+    aye('==', 'text/css', c.content_type)
+    c.get('/static/main.js', code=200)
+    aye('==', 'application/javascript', c.content_type)
 
     c.get('/static/index.html', code=200)
     aye('in', '{{ template }}', c.data)

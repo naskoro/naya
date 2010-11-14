@@ -8,7 +8,7 @@ from werkzeug.exceptions import HTTPException
 from werkzeug.routing import Map, Rule, Submount
 
 from .conf import Config
-from .ext.jinja import JinjaMixin
+from .ext.jinja import JinjaModuleMixin, JinjaAppMixin
 from .helpers import get_package_path, register
 from .testing import Client
 
@@ -47,9 +47,9 @@ class UrlMap(object):
         )
 
 
-class Module(UrlMap):
+class BaseModule(UrlMap):
     def __init__(self, import_name, prefs=None):
-        super(Module, self).__init__(import_name)
+        super(BaseModule, self).__init__(import_name)
 
         self.conf = self.get_prefs(prefs)
         self.root_path = get_package_path(self.import_name)
@@ -64,8 +64,9 @@ class Module(UrlMap):
         self.rule_factory = rule_factory
         return self
 
-    @register('default_prefs')
-    def default_module_prefs(self):
+    @classmethod
+    @register('defaults')
+    def module_defaults(cls):
         return {
             'theme': {
                 'path_suffix': '_theme',
@@ -74,7 +75,7 @@ class Module(UrlMap):
         }
 
     @register('init', 0)
-    def init_module(self):
+    def module_init(self):
         self.name = self.prefix = ''
         self.rule_factory = Submount
 
@@ -84,7 +85,7 @@ class Module(UrlMap):
 
     def get_prefs(self, prefs_):
         prefs = Config()
-        register.run(self, 'default_prefs', lambda x: prefs.update(x))
+        register.run(self, 'defaults', lambda x: prefs.update(x))
         prefs.update(prefs_)
         return prefs
 
@@ -108,12 +109,13 @@ class Request(BaseRequest):
     pass
 
 
-class BaseApp(Module):
+class BaseApp(BaseModule):
     request_class = Request
     response_class = Response
 
-    @register('default_prefs')
-    def default_app_prefs(self):
+    @classmethod
+    @register('defaults')
+    def app_defaults(cls):
         return {
             'debug': False,
             'theme': {
@@ -124,14 +126,14 @@ class BaseApp(Module):
         }
 
     @register('init', 0)
-    def init_app(self):
+    def app_init(self):
         self.modules = self.conf['modules']
         for name, module in self.modules.items():
             module.name = name
             self.add_map(module, module.prefix, module.rule_factory)
 
     @register('init')
-    def init_shares(self):
+    def app_init_shares(self):
         shared = False
         endpoint = self.conf['theme:endpoint']
         url_prefix = self.conf['theme:url_prefix']
@@ -217,5 +219,8 @@ class BaseApp(Module):
         return self.dispatch(environ, start_response)
 
 
-class App(BaseApp, JinjaMixin):
+class App(BaseApp, JinjaModuleMixin, JinjaAppMixin):
+    pass
+
+class Module(BaseModule, JinjaModuleMixin):
     pass
