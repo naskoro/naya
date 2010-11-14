@@ -52,9 +52,7 @@ class JinjaAppMixin(object):
         if not jinja_loaders:
             return
 
-        loader = PrefixLoader(jinja_loaders)
-        loader.prefix_separator = self.conf['jinja:prefix_separator']
-        self.jinja = Environment(loader=loader)
+        self.jinja = Environment(loader=PrefixLoader(self, jinja_loaders))
         self.jinja.filters.update(self.conf['jinja:filters'])
 
         if not self.conf['jinja:shared']:
@@ -101,16 +99,19 @@ class JinjaAppMixin(object):
 
 
 class PrefixLoader(PrefixLoaderBase):
-    prefix_separator = ':'
+    def __init__(self, app, *args, **kwargs):
+        self.app = app
+        super(PrefixLoader, self).__init__(*args, **kwargs)
 
     def get_source(self, environment, template):
+        prefix_separator = self.app.conf['jinja:prefix_separator']
         for prefix, loader in self.mapping.items():
             path = template
             path = '/%s' % path.lstrip('/')
             if path.startswith(prefix):
                 path = template[len(prefix):]
-                if path.startswith(self.prefix_separator):
-                    path = '/%s' % path[1:]
+                if path.startswith(prefix_separator):
+                    path = '/%s' % path[len(prefix_separator):]
                     loader.get_source(environment, path)
             try:
                 return loader.get_source(environment, path)

@@ -59,10 +59,6 @@ def test_urls():
     c.get('/admin/base.html', code=200)
     aye('in', 'front', c.data)
 
-    c.get('/admin:base.html', code=200)
-    aye('in', 'admin', c.data)
-    aye('in', '/s/admin/base.html', c.data)
-
     c.get('/admin/base', code=302)
     c.get('/admin/base/', code=200)
     aye('in', 'text/html', c.content_type)
@@ -95,3 +91,15 @@ def test_urls():
     c.get('/main.css', code=404)
     c.get('/admin/not_found', code=404)
     c.get('/admin/base/index', code=404)
+
+def test_concrete_loader():
+    def check(sep=':'):
+        app.conf['jinja:prefix_separator'] = sep
+        c.get('/admin%sbase.html' % sep, code=200)
+        aye('in', 'admin', c.data)
+        aye('in', '/s/admin/base.html', c.data)
+
+    check()
+    check('::')
+    check('---')
+

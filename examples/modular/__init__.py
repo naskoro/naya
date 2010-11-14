@@ -14,6 +14,6 @@ app = App(__name__, {
         'endpoint': 'tpl',
         'url_prefix': '/',
         'path_ends': ['/index.html'],
-        'path_allow': ['*.html']
+        'path_allow': ['*.html'],
     }
 })
