@@ -8,7 +8,6 @@ from werkzeug.exceptions import HTTPException
 from werkzeug.routing import Map, Rule, Submount
 
 from .conf import Config
-from .ext.jinja import JinjaModuleMixin, JinjaAppMixin
 from .helpers import get_package_path, register
 from .testing import Client
 
@@ -219,9 +218,8 @@ class BaseApp(BaseModule):
         return self.dispatch(environ, start_response)
 
 
-class App(BaseApp, JinjaModuleMixin, JinjaAppMixin):
-    pass
-
-
-class Module(BaseModule, JinjaModuleMixin):
-    pass
+try:
+    from .jinja import Module, App
+except ImportError:
+    Module = BaseModule
+    App = BaseApp

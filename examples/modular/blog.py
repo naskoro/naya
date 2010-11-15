@@ -1,4 +1,4 @@
-from naya import Module
+from naya import BaseModule
 
 
-mod = Module(__name__)
+mod = BaseModule(__name__)

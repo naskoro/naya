@@ -8,7 +8,8 @@ from jinja2 import (
 )
 from werkzeug import redirect
 
-from naya.helpers import register
+from . import BaseModule, BaseApp
+from .helpers import register
 
 
 class JinjaModuleMixin(object):
@@ -62,7 +63,7 @@ class JinjaAppMixin(object):
         url_prefix = self.conf['jinja:url_prefix']
 
         for module in [self] + self.modules.values():
-            if not module.tpl_path and self != module:
+            if not self.has_templates(module) and self != module:
                 continue
             prefix = '%s%s' % (url_prefix, module.prefix.lstrip('/'))
             self.add_route(
@@ -75,10 +76,13 @@ class JinjaAppMixin(object):
             self.dispatch, self, url_prefix
         )
 
+    def has_templates(self, module):
+        return hasattr(module, 'tpl_path') and module.tpl_path
+
     def jinja_loaders(self):
         jinja_loaders = {}
         for module in [self] + self.modules.values():
-            if not module.tpl_path:
+            if not self.has_templates(module):
                 continue
             prefix = module.prefix
             prefix = prefix and '/%s' % prefix or prefix
@@ -96,6 +100,14 @@ class JinjaAppMixin(object):
         context.setdefault('app', self)
         template = self.jinja.get_template(template_name)
         return template.render(**context)
+
+
+class Module(BaseModule, JinjaModuleMixin):
+    pass
+
+
+class App(BaseApp, JinjaModuleMixin, JinjaAppMixin):
+    pass
 
 
 class PrefixLoader(PrefixLoaderBase):

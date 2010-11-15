@@ -18,7 +18,7 @@ setup(
     author_email='naspeh@ya.ru',
     description='A microframework based on Werkzeug',
     long_description=__doc__,
-    packages=['naya', 'naya.ext'],
+    packages=['naya'],
     zip_safe=False,
     platforms='any',
     install_requires=[
