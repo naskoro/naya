@@ -92,6 +92,7 @@ def test_urls():
     c.get('/admin/not_found', code=404)
     c.get('/admin/base/index', code=404)
 
+
 def test_concrete_loader():
     def check(sep=':'):
         app.conf['jinja:prefix_separator'] = sep
@@ -102,4 +103,3 @@ def test_concrete_loader():
     check()
     check('::')
     check('---')
-
