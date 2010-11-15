@@ -8,14 +8,12 @@ from jinja2 import (
 )
 from werkzeug import redirect
 
-from . import BaseModule, BaseApp
 from .helpers import register
 
 
 class JinjaModuleMixin(object):
-    @classmethod
     @register('defaults')
-    def jinja_module_defaults(cls):
+    def jinja_module_defaults(self):
         return {
             'jinja': {
                 'path_suffix': '_theme'
@@ -29,9 +27,8 @@ class JinjaModuleMixin(object):
 
 
 class JinjaAppMixin(object):
-    @classmethod
     @register('defaults')
-    def jinja_app_defaults(cls):
+    def jinja_app_defaults(self):
         return {
             'jinja': {
                 'shared': True,
@@ -100,14 +97,6 @@ class JinjaAppMixin(object):
         context.setdefault('app', self)
         template = self.jinja.get_template(template_name)
         return template.render(**context)
-
-
-class Module(BaseModule, JinjaModuleMixin):
-    pass
-
-
-class App(BaseApp, JinjaModuleMixin, JinjaAppMixin):
-    pass
 
 
 class PrefixLoader(PrefixLoaderBase):

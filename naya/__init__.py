@@ -63,9 +63,8 @@ class BaseModule(UrlMap):
         self.rule_factory = rule_factory
         return self
 
-    @classmethod
     @register('defaults')
-    def module_defaults(cls):
+    def module_defaults(self):
         return {
             'theme': {
                 'path_suffix': '_theme',
@@ -112,9 +111,8 @@ class BaseApp(BaseModule):
     request_class = Request
     response_class = Response
 
-    @classmethod
     @register('defaults')
-    def app_defaults(cls):
+    def app_defaults(self):
         return {
             'debug': False,
             'theme': {
@@ -219,7 +217,14 @@ class BaseApp(BaseModule):
 
 
 try:
-    from .jinja import Module, App
+    from .jinja import JinjaModuleMixin, JinjaAppMixin
+
+    class Module(BaseModule, JinjaModuleMixin):
+        pass
+
+    class App(BaseApp, JinjaModuleMixin, JinjaAppMixin):
+        pass
+
 except ImportError:
     Module = BaseModule
     App = BaseApp
