@@ -3,11 +3,6 @@ from naya.script import sh
 from werkzeug.script import run
 
 
-sh.defaults(params={
-    'naya_path': '/root/repos/naya'
-})
-
-
 def action_pep8(target='.'):
     '''Run pep8.'''
     sh('pep8 --ignore=E202 %s' % target)
@@ -41,14 +36,6 @@ def action_test(target='', clean=False, failed=('f', False),
         command.append(target)
 
     sh(' '.join(command))
-
-
-def action_deploy(host='yadro.org'):
-    '''Deploy code on server.'''
-    sh(('pwd', 'hg push'))
-    sh((
-        'cd {naya_path}', 'pwd', 'hg up'
-    ), host=host)
 
 
 if __name__ == '__main__':
