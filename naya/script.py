@@ -34,6 +34,10 @@ class Shell(object):
     def __init__(self, *args, **kwargs):
         self.defaults(*args, **kwargs)
 
+        self.stdout = None
+        self.stderr = None
+        self.code = None
+
     def defaults(self, capture=False, host=None, params=None):
         self.params = params
         self.host = host
@@ -61,11 +65,16 @@ class Shell(object):
         cmd = Popen([command], stdout=stdout, stderr=stderr, shell=True)
         try:
             stdout, stderr = cmd.communicate()
-            code = cmd.returncode
+            stdout = stdout.strip() if stdout else None
+            stderr = stderr.strip() if stderr else None
+
+            self.stdout, self.stderr = stdout, stderr
+            self.code = code = cmd.returncode
+            self.cmd = cmd
 
             out = stdout and [stdout] or []
             out += stderr and [stderr] or []
-            if cmd.returncode != 0:
+            if code != 0:
                 out += ['FAIL with code %r.\n' % code]
             if out:
                 print '\n\n'.join(out)
@@ -74,5 +83,6 @@ class Shell(object):
             sys.exit(1)
         if code != 0:
             sys.exit(code)
+        return stdout
 
 sh = Shell()
