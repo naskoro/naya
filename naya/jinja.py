@@ -93,10 +93,15 @@ class JinjaAppMixin(object):
                 jinja_loaders[prefix] = ChoiceLoader(loader)
         return jinja_loaders
 
-    def render_to(self, template_name, **context):
+    def to_template(self, template_name, **context):
         context.setdefault('app', self)
         template = self.jinja.get_template(template_name)
         return template.render(**context)
+
+    def from_template(self, template_name, attribute):
+        return getattr(
+            self.jinja.get_template(template_name).module, attribute
+        )
 
 
 class PrefixLoader(PrefixLoaderBase):

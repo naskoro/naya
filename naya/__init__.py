@@ -5,11 +5,11 @@ from werkzeug import (
     Response as BaseResponse, Request as BaseRequest
 )
 from werkzeug.exceptions import HTTPException
-from werkzeug.routing import Map, Rule, Submount
+from werkzeug.routing import Map, Rule, Submount, BuildError
 
 from .conf import Config
 from .helpers import get_package_path, register
-from .testing import Client
+from .shortcut import ShortcutMixin
 
 
 class UrlMap(object):
@@ -161,6 +161,16 @@ class BaseApp(BaseModule):
                 self.dispatch, {prefix: module.theme_path}
             )
 
+    def _endpoint(self, map, suffix):
+        return '{0}.{1}'.format(map.import_name, suffix)
+
+    def _url(self, endpoint, values):
+        try:
+            url = self.url_adapter.build(endpoint, values)
+        except BuildError:
+            url = None
+        return url
+
     def url_for(self, endpoint, **values):
         prefix = endpoint.find(':')
         if prefix == -1:
@@ -168,17 +178,23 @@ class BaseApp(BaseModule):
         else:
             suffix = endpoint[prefix + 1:]
             prefix = endpoint[0:prefix]
-
-            modules = self.modules.copy()
-            if '' not in modules:
-                modules[''] = self
-            if prefix in modules:
-                module = modules[prefix]
-                endpoint = '{0}.{1}'.format(module.import_name, suffix)
+            url = None
+            if prefix == '':
+                url = self._url(self._endpoint(self, suffix), values)
+                if url:
+                    return url
+            if not url and prefix in self.modules:
+                url = self._url(
+                    self._endpoint(self.modules[prefix], suffix), values
+                )
+                if url:
+                    return url
+            for map, prefix_ in self.maps:
+                if prefix_ == prefix:
+                    url = self._url(self._endpoint(map, suffix), values)
+                    if url:
+                        return url
         return self.url_adapter.build(endpoint, values)
-
-    def test_client(self, *args, **kwargs):
-        return Client(self, *args, **kwargs)
 
     def make_response(self, response):
         """
@@ -222,9 +238,11 @@ try:
     class Module(BaseModule, JinjaModuleMixin):
         pass
 
-    class App(BaseApp, JinjaModuleMixin, JinjaAppMixin):
+    class App(BaseApp, ShortcutMixin, JinjaModuleMixin, JinjaAppMixin):
         pass
 
 except ImportError:
     Module = BaseModule
-    App = BaseApp
+
+    class App(BaseApp, ShortcutMixin):
+        pass
