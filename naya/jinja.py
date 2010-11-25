@@ -35,8 +35,8 @@ class JinjaAppMixin(object):
                 'endpoint': 'jinja',
                 'url_prefix': '/t/',
                 'path_ends': [],
-                'path_allow': ['*.css', '*.js'],
-                'path_deny': [],
+                'path_allow': ['\.css$', '\.js$'],
+                'path_deny': ['\.png$', '\.jpg$', '\.ico$', '\.gif$'],
                 'filters': {},
                 'prefix_separator': ':'
             }
@@ -134,17 +134,12 @@ class SharedJinjaMiddleware(object):
         self.context = context
 
     def is_allow_path(self, path):
-        def prepare(pattern):
-            pattern = re.escape(pattern)
-            pattern = pattern.replace(r'\*', '.*')
-            return pattern
-
         path = path.lstrip('/')
         for pattern in self.app.conf['jinja:path_deny']:
-            if re.match(prepare(pattern), path):
+            if re.search(pattern, path):
                 return False
         for pattern in self.app.conf['jinja:path_allow']:
-            if re.match(prepare(pattern), path):
+            if re.search(pattern, path):
                 return True
         return False
 
@@ -152,6 +147,9 @@ class SharedJinjaMiddleware(object):
         base_path = environ.get('PATH_INFO', '/')
         template = None
         if base_path.startswith(self.prefix):
+            if not self.is_allow_path(base_path):
+                return self.dispatch(environ, start_response)
+
             path = base_path[len(self.prefix):]
             path = '/%s' % path.strip('/')
             path = path.rstrip('/')
@@ -165,7 +163,7 @@ class SharedJinjaMiddleware(object):
             except TemplateNotFound:
                 template = None
 
-        if not template or not self.is_allow_path(template.name):
+        if not template:
             return self.dispatch(environ, start_response)
 
         real_path = template.name
@@ -173,8 +171,10 @@ class SharedJinjaMiddleware(object):
         for end in path_ends:
             pattern = '%s$' % re.escape(end)
             if re.search(pattern, real_path):
-                main_path = re.sub(pattern, '/', real_path)
-                break
+                path = re.sub(pattern, '/', real_path)
+                if self.is_allow_path(path):
+                    main_path = path
+                    break
 
         main_path = main_path.lstrip('/')
         full_path = self.app.url_for(

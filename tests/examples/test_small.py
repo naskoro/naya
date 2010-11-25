@@ -57,16 +57,16 @@ def test_jinja_shared():
     c.get('/t/text.txt', code=200)
     c.get('/t/', code=200)
 
-    app.conf['jinja:path_deny'] = ['*.*']
+    app.conf['jinja:path_deny'] = ['.*']
     c.get('/t/text.txt', code=404)
     c.get('/t/', code=404)
 
-    app.conf['jinja:path_allow'] = ['*.txt']
+    app.conf['jinja:path_allow'] = ['\.txt$']
     app.conf['jinja:path_deny'] = []
     c.get('/t/text.txt', code=200)
     c.get('/t/', code=404)
 
-    app.conf['jinja:path_allow'] = ['*']
-    app.conf['jinja:path_deny'] = ['*.html']
+    app.conf['jinja:path_allow'] = ['.*']
+    app.conf['jinja:path_deny'] = ['\.html$']
     c.get('/t/text.txt', code=200)
-    c.get('/t/', code=404)
+    c.get('/t/', code=200)
