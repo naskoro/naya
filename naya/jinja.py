@@ -134,7 +134,7 @@ class SharedJinjaMiddleware(object):
         self.context = context
 
     def is_allow_path(self, path):
-        path = path.lstrip('/')
+        path = path.strip('/')
         for pattern in self.app.conf['jinja:path_deny']:
             if re.search(pattern, path):
                 return False
