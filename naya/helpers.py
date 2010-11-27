@@ -31,8 +31,16 @@ class Mark(object):
 
 
 class Marker(object):
+    def __init__(self):
+        self._marks = {}
+
     def __getattribute__(self, name):
-        return Mark(name)
+        if name.startswith('_'):
+            return object.__getattribute__(self, name)
+        marks = self._marks
+        if name not in marks:
+            marks[name] = Mark(name)
+        return marks[name]
 
 
 marker = Marker()
