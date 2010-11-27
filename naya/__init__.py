@@ -112,7 +112,7 @@ class BaseApp(BaseModule):
     response_class = Response
 
     @marker.defaults()
-    def app_defaults(self):
+    def defaults(self):
         return {
             'debug': False,
             'theme': {
@@ -123,14 +123,14 @@ class BaseApp(BaseModule):
         }
 
     @marker.init(0)
-    def app_init(self):
+    def init(self):
         self.modules = self.conf['modules']
         for name, module in self.modules.items():
             module.name = name
             self.add_map(module, module.prefix, module.rule_factory)
 
     @marker.init()
-    def app_init_shares(self):
+    def init_shares(self):
         shared = False
         endpoint = self.conf['theme:endpoint']
         url_prefix = self.conf['theme:url_prefix']
@@ -233,12 +233,12 @@ class BaseApp(BaseModule):
 
 
 try:
-    from .jinja import JinjaModuleMixin, JinjaAppMixin
+    from .jinja import JinjaModuleMixin, JinjaMixin
 
     class Module(BaseModule, JinjaModuleMixin):
         pass
 
-    class App(BaseApp, ShortcutMixin, JinjaModuleMixin, JinjaAppMixin):
+    class App(BaseApp, ShortcutMixin, JinjaModuleMixin, JinjaMixin):
         pass
 
 except ImportError:

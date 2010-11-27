@@ -26,9 +26,9 @@ class JinjaModuleMixin(object):
         self.tpl_path = os.path.isdir(tpl_path) and tpl_path or None
 
 
-class JinjaAppMixin(object):
+class JinjaMixin(object):
     @marker.defaults()
-    def jinja_app_defaults(self):
+    def jinja_defaults(self):
         return {
             'jinja': {
                 'shared': True,
@@ -43,7 +43,7 @@ class JinjaAppMixin(object):
         }
 
     @marker.init()
-    def jinja_app_init(self):
+    def jinja_init(self):
         self.jinja = False
 
         jinja_loaders = self.jinja_loaders()
