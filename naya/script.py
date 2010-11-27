@@ -1,4 +1,5 @@
 import sys
+from string import Template
 from subprocess import Popen, PIPE
 
 
@@ -38,21 +39,22 @@ class Shell(object):
         self.stderr = None
         self.code = None
 
-    def defaults(self, capture=False, host=None, params=None):
+    def defaults(self, capture=False, params=None, host=None):
+        self.capture = capture
         self.params = params
         self.host = host
-        self.capture = capture
 
-    def __call__(self, command, capture=False, host=None, params=None):
+    def __call__(self, command, capture=False, params=None, remote=False):
         capture = capture if capture != None else self.capture
-        host = host if host != None else self.host
         params = params if params != None else self.params
+        host = None
+        if remote:
+            host = isinstance(remote, basestring) and remote or self.host
 
         if isinstance(command, (tuple, list)):
             command = ' && '.join(command)
 
-        if params:
-            command = command.format(**params)
+        command = Template(command).substitute(params or {})
 
         if host:
             command = command.replace('"', '\\"')
@@ -79,7 +81,7 @@ class Shell(object):
             if out:
                 print '\n\n'.join(out)
         except KeyboardInterrupt:
-            print >> sys.stderr, "\nStopped."
+            print >> sys.stderr, '\nStopped.'
             sys.exit(1)
         if code != 0:
             sys.exit(code)

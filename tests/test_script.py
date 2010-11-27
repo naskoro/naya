@@ -33,32 +33,36 @@ def test_sh():
     "cd: 1: can't cd to __"
     >>> sh.code
     2
-    >>> sh('echo {answer}', params={'answer':'42'})
+    >>> sh('echo $answer', params={'answer':'42'})
     $ echo 42
     42
     '42'
-    >>> sh('echo "{answer}"', params={'answer': 42})
+    >>> sh('echo "$answer"', params={'answer': 42})
     $ echo "42"
     42
     '42'
-    >>> sh('echo 42', host='localhost')
+    >>> sh('echo 42', remote='localhost')
     $ ssh localhost "echo 42"
     42
     '42'
-    >>> sh('echo "42"', host='localhost')
+    >>> sh('echo "42"', remote='localhost')
     $ ssh localhost "echo \\"42\\""
     42
     '42'
-    >>> sh.defaults(params={'answer': '42'})
-    >>> sh('echo {answer}')
+    >>> sh.defaults(params={'answer': '42'}, host='localhost')
+    >>> sh('echo $answer')
     $ echo 42
     42
     '42'
-    >>> sh('echo {answer}', params={'answer': 'not 42'})
+    >>> sh('echo $answer', remote=True)
+    $ ssh localhost "echo 42"
+    42
+    '42'
+    >>> sh('echo $answer', params={'answer': 'not 42'})
     $ echo not 42
     not 42
     'not 42'
-    >>> sh('echo {answer}', capture=True)
+    >>> sh('echo $answer', capture=True)
     $ echo 42
     >>> sh.defaults(capture=True)
     >>> sh('echo 42', capture=False)

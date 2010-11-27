@@ -7,7 +7,7 @@ from small import app
 
 def action_pep8(target='.'):
     '''Run pep8.'''
-    sh('pep8 --ignore=E202 {0}'.format(target))
+    sh('pep8 --ignore=E202 %s' % target)
 
 
 def action_clean(mask=''):
