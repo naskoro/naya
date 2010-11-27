@@ -1,4 +1,4 @@
-from naya.helpers import register
+from naya.helpers import marker
 from naya.testing import aye
 from werkzeug.routing import BuildError
 
@@ -14,8 +14,8 @@ def test_app():
     aye('==', ('', ''), (app.name, app.prefix))
 
     aye('==', False, app.jinja)
-    aye('len', 4, register.get(app, 'defaults'))
-    aye('len', 5, register.get(app, 'init'))
+    aye('len', 4, marker.defaults.of(app))
+    aye('len', 5, marker.init.of(app))
     aye('len', 0, app.modules)
 
     url_rules = list(app.url_rules)

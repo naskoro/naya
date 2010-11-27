@@ -2,31 +2,40 @@ import os
 import sys
 
 
-class Register(object):
-    NAME = 'register_name'
-    INDEX = 'register_index'
+class Mark(object):
+    NAME = '_mark_name_'
+    INDEX = '_mark_index_'
 
-    def __call__(self, name, index=10):
+    def __init__(self, name):
+        self.name = name
+
+    def __call__(self, index=10):
         def wrap(func):
-            setattr(func, self.NAME, name)
+            setattr(func, self.NAME, self.name)
             setattr(func, self.INDEX, index)
             return func
         return wrap
 
-    def get(self, obj, name):
+    def of(self, obj):
         funcs = []
         for attr in dir(obj):
             attr = getattr(obj, attr)
             if callable(attr) and hasattr(attr, self.NAME) \
-            and getattr(attr, self.NAME) == name:
+            and getattr(attr, self.NAME) == self.name:
                 funcs.insert(getattr(attr, self.INDEX), attr)
         return funcs
 
-    def run(self, obj, name, callback=lambda x: x):
-        for func in self.get(obj, name):
+    def run(self, obj, callback=lambda x: x):
+        for func in self.of(obj):
             callback(func())
 
-register = Register()
+
+class Marker(object):
+    def __getattribute__(self, name):
+        return Mark(name)
+
+
+marker = Marker()
 
 
 def get_package_path(name):

@@ -8,7 +8,7 @@ from werkzeug.exceptions import HTTPException
 from werkzeug.routing import Map, Rule, Submount, BuildError
 
 from .conf import Config
-from .helpers import get_package_path, register
+from .helpers import get_package_path, marker
 from .shortcut import ShortcutMixin
 
 
@@ -56,14 +56,14 @@ class BaseModule(UrlMap):
         theme_path = self.get_path(self.conf['theme:path_suffix'])
         self.theme_path = os.path.isdir(theme_path) and theme_path or None
 
-        register.run(self, 'init')
+        marker.init.run(self)
 
     def __call__(self, prefix, rule_factory=Submount):
         self.prefix = prefix
         self.rule_factory = rule_factory
         return self
 
-    @register('defaults')
+    @marker.defaults()
     def module_defaults(self):
         return {
             'theme': {
@@ -72,7 +72,7 @@ class BaseModule(UrlMap):
             'maps': {}
         }
 
-    @register('init', 0)
+    @marker.init(0)
     def module_init(self):
         self.name = self.prefix = ''
         self.rule_factory = Submount
@@ -83,7 +83,7 @@ class BaseModule(UrlMap):
 
     def get_prefs(self, prefs_):
         prefs = Config()
-        register.run(self, 'defaults', lambda x: prefs.update(x))
+        marker.defaults.run(self, lambda x: prefs.update(x))
         prefs.update(prefs_)
         return prefs
 
@@ -111,7 +111,7 @@ class BaseApp(BaseModule):
     request_class = Request
     response_class = Response
 
-    @register('defaults')
+    @marker.defaults()
     def app_defaults(self):
         return {
             'debug': False,
@@ -122,14 +122,14 @@ class BaseApp(BaseModule):
             'modules': {},
         }
 
-    @register('init', 0)
+    @marker.init(0)
     def app_init(self):
         self.modules = self.conf['modules']
         for name, module in self.modules.items():
             module.name = name
             self.add_map(module, module.prefix, module.rule_factory)
 
-    @register('init')
+    @marker.init()
     def app_init_shares(self):
         shared = False
         endpoint = self.conf['theme:endpoint']

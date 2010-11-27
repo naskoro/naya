@@ -8,11 +8,11 @@ from jinja2 import (
 )
 from werkzeug import redirect
 
-from .helpers import register
+from .helpers import marker
 
 
 class JinjaModuleMixin(object):
-    @register('defaults')
+    @marker.defaults()
     def jinja_module_defaults(self):
         return {
             'jinja': {
@@ -20,14 +20,14 @@ class JinjaModuleMixin(object):
             }
         }
 
-    @register('init', 1)
+    @marker.init(1)
     def jinja_module_init(self):
         tpl_path = self.get_path(self.conf['jinja:path_suffix'])
         self.tpl_path = os.path.isdir(tpl_path) and tpl_path or None
 
 
 class JinjaAppMixin(object):
-    @register('defaults')
+    @marker.defaults()
     def jinja_app_defaults(self):
         return {
             'jinja': {
@@ -42,7 +42,7 @@ class JinjaAppMixin(object):
             }
         }
 
-    @register('init')
+    @marker.init()
     def jinja_app_init(self):
         self.jinja = False
 
