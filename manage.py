@@ -27,8 +27,8 @@ def action_test(target='', clean=False, failed=('f', False),
         command.append('--failed')
     if with_coverage:
         command.append('--with-coverage --cover-tests')
-    if cover_package:
-        command.append('--cover-package={0}'.format(cover_package))
+        if cover_package:
+            command.append('--cover-package=%s' % cover_package)
 
     command.append('--with-id')
 
