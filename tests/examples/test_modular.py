@@ -26,8 +26,6 @@ def test_app():
 
 
 def test_url_for():
-    c.get('/', code=200)
-
     aye('==', '/', app.url_for(':tpl', path=''))
     aye('==', '/', app.url_for(':tpl', path='/'))
     aye('==', '/index.html', app.url_for(':tpl', path='index.html'))
@@ -102,4 +100,3 @@ def test_concrete_loader():
 
     check()
     check('::')
-    check('---')

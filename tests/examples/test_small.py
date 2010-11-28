@@ -18,8 +18,6 @@ def test_app():
 
 
 def test_url_for():
-    c.get('/', code=200)
-
     aye('==', '/', app.url_for(':hello'))
     aye('==', '/bob', app.url_for(':hello', name='bob'))
     aye('==', '/t/', app.url_for(':jinja', path=''))

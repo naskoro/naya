@@ -9,7 +9,6 @@ c = app.test_client()
 
 
 def test_app():
-
     aye('==', 'examples.simple', app.import_name)
     aye('==', ('', ''), (app.name, app.prefix))
 
