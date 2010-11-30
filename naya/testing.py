@@ -75,8 +75,12 @@ class Aye(object):
 
         raise AttributeError('Use some of\n%s' % pformat(self.expressions))
 
-    def raises(self, *args, **kwargs):
-        from nose import tools
-        tools.assert_raises(*args, **kwargs)
+    def raises(self, expected, callback, *args, **kwargs):
+        try:
+            callback(*args, **kwargs)
+        except expected as e:
+            return e.args
+        else:
+            raise expected('Not raised')
 
 aye = Aye()

@@ -4,14 +4,13 @@ from naya.testing import aye
 
 CONFIG = {'a': 1, 'b': {'a': 2, 'b': {'a': 3}}, 'a0': 0, '_a': 0, 'a_0': 0}
 CONFIG_FAIL = (
-    {1: 1},
-    {'a:b': 1},
-    {'a': 1, 'b:c': {'a': 2}},
-    {'0': 1},
-    {'0a': 1},
-    {'_0a-': 1},
-    {'a-': 1},
-    {'-': 1},
+    ({1: 1}, 1),
+    ({'a:b': 1}, 'a:b'),
+    ({'a': 1, 'b:c': {'a': 2}}, 'b:c'),
+    ({'0': 1}, '0'),
+    ({'0a': 1}, '0a'),
+    ({'_0a-': 1}, '_0a-'),
+    ({'-': 1}, '-'),
 )
 
 
@@ -71,20 +70,36 @@ def test_config_set():
 
 
 def test_config_fail():
+    def check_set(conf, key, value):
+        def inner():
+            conf[key] = value
+        return inner
+
     conf = Config(CONFIG)
 
-    aye.raises(KeyError, lambda: conf['b:a:c'])
-    aye.raises(KeyError, lambda: conf['d'])
-    aye.raises(KeyError, lambda: conf['b:d'])
+    args = aye.raises(KeyError, lambda: conf['b:a:c'])
+    aye('==', args, ('a:c',))
 
-    for prefs in CONFIG_FAIL:
-        aye.raises(KeyError, lambda: Config(prefs))
+    args = aye.raises(KeyError, lambda: conf['d'])
+    aye('==', args, ('d',))
 
-    for prefs in CONFIG_FAIL:
-        aye.raises(KeyError, lambda: conf.update(prefs))
+    args = aye.raises(KeyError, lambda: conf['b:d'])
+    aye('==', args, ('d',))
 
-    for prefs in CONFIG_FAIL:
-        aye.raises(KeyError, lambda: conf.__setitem__('b:b', prefs))
+    args = aye.raises(KeyError, check_set(conf, 'a:42', 42))
+    aye('==', args, ('conf[\'a\'] = 1, not dict',))
+
+    for prefs, key in CONFIG_FAIL:
+        args = aye.raises(KeyError, lambda: Config(prefs))
+        aye('in', '%r not match' % key, args[0])
+
+    for prefs, key in CONFIG_FAIL:
+        args = aye.raises(KeyError, lambda: conf.update(prefs))
+        aye('in', '%r not match' % key, args[0])
+
+    for prefs, key in CONFIG_FAIL:
+        args = aye.raises(KeyError, check_set(conf, 'b:b', prefs))
+        aye('in', '%r not match' % key, args[0])
 
 
 def test_config_contains():

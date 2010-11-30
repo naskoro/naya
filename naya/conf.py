@@ -12,10 +12,7 @@ class Config(dict):
         regex = r'^$|^([a-z_][a-z_0-9]*$)'
         for key, value in data.items():
             if not isinstance(key, basestring) or not re.match(regex, key):
-                raise KeyError(
-                    'Keys must be a string and match %r, but contains key: %r'
-                    % (regex, key)
-                )
+                raise KeyError('%r not match %r' % (key, regex))
             if isinstance(value, dict):
                 self.is_valid(value)
 
@@ -32,7 +29,7 @@ class Config(dict):
             value = self.__getitem__(name[:index])
             if isinstance(value, dict):
                 return value[name[index + 1:]]
-            raise KeyError
+            raise KeyError('%s' % name)
         value = super(Config, self).__getitem__(name)
         if isinstance(value, dict):
             value = Config(value)
@@ -42,8 +39,10 @@ class Config(dict):
         if name.find(self.separator) != -1:
             index = name.index(self.separator)
             key = name[:index]
-            if not key in self or not isinstance(self[key], dict):
+            if not key in self:
                 super(Config, self).__setitem__(key, Config())
+            if not isinstance(self[key], dict):
+                raise KeyError('conf[%r] = %r, not dict' % (key, self[key]))
             new = self[key]
             new[name[index + 1:]] = value
             super(Config, self).__setitem__(key, new)
