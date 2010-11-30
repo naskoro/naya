@@ -35,52 +35,54 @@ class Shell(object):
     def __init__(self, *args, **kwargs):
         self.defaults(*args, **kwargs)
 
-
-    def defaults(self, capture=False, params=None, host=None):
-        self.capture = capture
+    def defaults(self, params=None, host=None):
         self.params = params
         self.host = host
 
-    def __call__(self, command, capture=False, params=None, remote=False):
-        self.stdout = self.cmd =  self.code = None
+    def run(self, cmd, capture):
+        if capture:
+            return cmd.wait(), cmd.stdout.read()
 
-        capture = capture if capture != None else self.capture
-        params = params if params != None else self.params
-        host = None
-        if remote:
-            host = remote if isinstance(remote, basestring) else self.host
+        stdout = ''
+        while True:
+            line = cmd.stdout.readline()
+            if not line:
+                break
+            print(line.rstrip())
+            stdout += line
+        return cmd.wait(), stdout
+
+    def __call__(self, command, capture=False, params=None, remote=False):
+        self.code = self.stdout = None
+        params = params or self.params
 
         if isinstance(command, (tuple, list)):
             command = ' && '.join(command)
 
-        command = Template(command).substitute(params or {})
+        if params:
+            command = Template(command).substitute(params)
 
-        if host:
+        if remote:
+            host = remote if isinstance(remote, basestring) else self.host
             command = command.replace('"', '\\"')
             command = 'ssh {0} "{1}"'.format(host, command)
 
-        print '$ {0!s}'.format(command)
+        print('$ {0!s}'.format(command))
 
-        self.cmd = Popen([command], stdout=PIPE , stderr=STDOUT, shell=True)
+        cmd = Popen([command], stdout=PIPE, stderr=STDOUT, shell=True)
         try:
-            if not capture:
-                self.stdout = ''
-                while True:
-                    line = self.cmd.stdout.readline()
-                    if not line:
-                        break
-                    print line,
-                    self.stdout += line
-                self.stdout = self.stdout.strip() or None
-
-            self.cmd.wait()
+            code, stdout = self.run(cmd, capture)
         except KeyboardInterrupt:
-            print >> sys.stderr, '\nStopped.'
+            print('\nStopped.')
+            sys.exit(1)
 
-        self.code = code = self.cmd.returncode
+        self.code = code
+        self.stdout = stdout and stdout.strip() or None
         if code != 0:
-            print 'FAIL with code %r.\n' % code
+            print('Failed with code {0}.\n'.format(code))
             sys.exit(code)
-        return self.stdout
+
+        if capture:
+            return self.stdout
 
 sh = Shell()
