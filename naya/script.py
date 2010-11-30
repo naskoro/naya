@@ -1,6 +1,6 @@
 import sys
 from string import Template
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, STDOUT
 
 
 def make_shell(init_func=None, banner=None, use_bpython=True):
@@ -35,9 +35,6 @@ class Shell(object):
     def __init__(self, *args, **kwargs):
         self.defaults(*args, **kwargs)
 
-        self.stdout = None
-        self.stderr = None
-        self.code = None
 
     def defaults(self, capture=False, params=None, host=None):
         self.capture = capture
@@ -45,11 +42,13 @@ class Shell(object):
         self.host = host
 
     def __call__(self, command, capture=False, params=None, remote=False):
+        self.stdout = self.cmd =  self.code = None
+
         capture = capture if capture != None else self.capture
         params = params if params != None else self.params
         host = None
         if remote:
-            host = isinstance(remote, basestring) and remote or self.host
+            host = remote if isinstance(remote, basestring) else self.host
 
         if isinstance(command, (tuple, list)):
             command = ' && '.join(command)
@@ -62,29 +61,26 @@ class Shell(object):
 
         print '$ {0!s}'.format(command)
 
-        stdout = stderr = not capture and PIPE or None
-
-        cmd = Popen([command], stdout=stdout, stderr=stderr, shell=True)
+        self.cmd = Popen([command], stdout=PIPE , stderr=STDOUT, shell=True)
         try:
-            stdout, stderr = cmd.communicate()
-            stdout = stdout.strip() if stdout else None
-            stderr = stderr.strip() if stderr else None
+            if not capture:
+                self.stdout = ''
+                while True:
+                    line = self.cmd.stdout.readline()
+                    if not line:
+                        break
+                    print line,
+                    self.stdout += line
+                self.stdout = self.stdout.strip() or None
 
-            self.stdout, self.stderr = stdout, stderr
-            self.code = code = cmd.returncode
-            self.cmd = cmd
-
-            out = stdout and [stdout] or []
-            out += stderr and [stderr] or []
-            if code != 0:
-                out += ['FAIL with code %r.\n' % code]
-            if out:
-                print '\n\n'.join(out)
+            self.cmd.wait()
         except KeyboardInterrupt:
             print >> sys.stderr, '\nStopped.'
-            sys.exit(1)
+
+        self.code = code = self.cmd.returncode
         if code != 0:
+            print 'FAIL with code %r.\n' % code
             sys.exit(code)
-        return stdout
+        return self.stdout
 
 sh = Shell()

@@ -7,7 +7,6 @@ def test_sh():
     >>> sh('cd ~')
     $ cd ~
     >>> sh.stdout
-    >>> sh.stderr
     >>> sh.code
     0
     >>> isinstance(sh.cmd, Popen)
@@ -28,9 +27,7 @@ def test_sh():
         ...
     SystemExit: 2
     >>> sh.stdout
-    'test'
-    >>> sh.stderr
-    "cd: 1: can't cd to __"
+    "test\\ncd: 1: can't cd to __"
     >>> sh.code
     2
     >>> sh('echo $answer', params={'answer':'42'})
