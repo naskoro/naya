@@ -82,4 +82,26 @@ def test_aye():
      (('', True, 1), 1, 'args[0]', '{0!r}'),
      (('not', False, 0), 1, 'not args[0]', 'not {0!r}'),
      (('len', 'not len'), 2, '{0}(args[1]) == args[0]', '{2}({1!r}) == {0!r}'))
+    >>> aye('==', 42)
+    Traceback (most recent call last):
+    ...
+    AttributeError: For '==' operand need minimum 2 arguments
+    >>> aye('not')
+    Traceback (most recent call last):
+    ...
+    AttributeError: For 'not' operand need minimum 1 arguments
+    >>> aye.call(True, isinstance, {}, dict)
+    >>> aye.call(True, isinstance, {}, str)
+    Traceback (most recent call last):
+    ...
+    AssertionError: assert False
+    (<built-in function isinstance>, {}, <type 'str'>)
+    >>> def check():
+    ...     raise KeyError
+    >>> aye.raises(KeyError, check)
+    ()
+    >>> aye.raises(KeyError, lambda: 1)
+    Traceback (most recent call last):
+    ...
+    KeyError: 'Not raised'
     '''

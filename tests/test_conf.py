@@ -46,9 +46,15 @@ def test_config_update():
     conf.update({'b': {'d': {'a': 1}}})
     aye('==', 1, conf['b:d:a'])
 
+    conf['b:d'].update(None)
+    aye('==', 1, conf['b:d:a'])
+
 
 def test_config_set():
     conf = Config(CONFIG)
+
+    conf['c:b'] = 42
+    aye('==', 42, conf['c:b'])
 
     conf['b:b:c'] = 30
     aye('==', 3, conf['b:b:a'])

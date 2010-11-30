@@ -54,7 +54,7 @@ class Aye(object):
                 continue
 
             if len(args) < expr[1]:
-                AttributeError(
+                raise AttributeError(
                     'For %r operand need minimum %s arguments'
                     % (operand, expr[1])
                 )
@@ -82,5 +82,9 @@ class Aye(object):
             return e.args
         else:
             raise expected('Not raised')
+
+    def call(self, expected, func, *args, **kwargs):
+        aye(expected, func(*args, **kwargs), func, *args, **kwargs)
+
 
 aye = Aye()
