@@ -3,7 +3,6 @@ from pprint import pformat
 from werkzeug.test import Client as BaseClient
 
 
-
 class Client(BaseClient):
     def __init__(self, *args, **kwargs):
         super(Client, self).__init__(*args, **kwargs)

@@ -9,5 +9,3 @@ class Module(BaseModule, JinjaModuleMixin):
 
 class App(BaseApp, ShortcutMixin, JinjaModuleMixin, JinjaMixin):
     pass
-
-

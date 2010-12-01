@@ -34,6 +34,7 @@ def tuple(app):
 def text(app):
     return app.to_template('text.txt')
 
+
 @mod.route('/macro/')
 def macro(app):
     return app.from_template('text.txt', 'body')()

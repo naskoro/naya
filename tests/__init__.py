@@ -8,6 +8,7 @@ def test_helpers():
     >>> assert app.root_path == getcwd()
     '''
 
+
 def test_jinja():
     '''
     NOTICE: Need doctest
