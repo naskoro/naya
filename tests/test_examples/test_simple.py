@@ -11,7 +11,6 @@ c = app.test_client()
 def test_client():
     result = c.get('/', code=200, as_tuple=True)
     aye('in', 'PATH_INFO', result[0])
-    aye('in', 'PATH_INFO', result[0])
     aye.call(True, isinstance, result[1], app.response_class)
 
 
