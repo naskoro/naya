@@ -1,3 +1,4 @@
+from naya.helpers import marker
 from naya.testing import aye
 
 from examples.small import app
@@ -10,6 +11,8 @@ def test_app():
     aye('==', 'examples.small', app.import_name)
     aye('!=', False, app.jinja)
 
+    aye('len', 4, marker.defaults.of(app))
+    aye('len', 5, marker.init.of(app))
     aye('len', 1, app.modules)
 
     mod = app.modules['']
@@ -23,6 +26,10 @@ def test_url_for():
     aye('==', '/t/', app.url_for(':jinja', path=''))
     aye('==', '/t/index.html', app.url_for(':jinja', path='index.html'))
     aye('==', '/static/index.html', app.url_for(':static', path='index.html'))
+
+    aye('==', '/blog/', app.url_for(':blog.index'))
+    aye('==', '/blog/', app.url_for('blog:index'))
+    aye('==', '/blog/', app.url_for('examples.small.blog.index'))
 
 
 def test_urls():
@@ -45,6 +52,22 @@ def test_urls():
 
     c.get('/static/index.html', code=200)
     aye('in', '{{ template }}', c.data)
+
+    c.get('/blog/', code=200)
+    aye('in', 'blog.index', c.data)
+
+    c.get('/a/500', code=500)
+    c.get('/a/403', code=403)
+    c.get('/tuple/', code=201)
+
+    c.get('/text/', code=200)
+    c.get('/macro/', code=200)
+
+    c.get('/r/', code=200, follow_redirects=True)
+    aye('==', '/', c.path)
+
+    args = aye.raises(ValueError, c.get, '/wrong/', code=500)
+    aye('==', args[0], 'View function did not return a response')
 
     c.get('/t/text.txt', code=404)
     c.get('/t/not_found', code=404)

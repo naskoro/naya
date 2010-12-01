@@ -1,4 +1,4 @@
-from naya import App
+from naya.base import App
 
 from . import admin, front, blog
 

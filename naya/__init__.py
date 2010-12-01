@@ -92,9 +92,6 @@ class BaseModule(UrlMap):
         args.insert(0, self.root_path)
         return os.path.join(*args)
 
-    def __str__(self):
-        return self.import_name
-
     def __repr__(self):
         return '<naya.Module({0.import_name})>'.format(self)
 
@@ -232,17 +229,8 @@ class BaseApp(BaseModule):
         return self.dispatch(environ, start_response)
 
 
-try:
-    from .jinja import JinjaModuleMixin, JinjaMixin
+Module = BaseModule
 
-    class Module(BaseModule, JinjaModuleMixin):
-        pass
 
-    class App(BaseApp, ShortcutMixin, JinjaModuleMixin, JinjaMixin):
-        pass
-
-except ImportError:
-    Module = BaseModule
-
-    class App(BaseApp, ShortcutMixin):
-        pass
+class App(BaseApp, ShortcutMixin):
+    pass

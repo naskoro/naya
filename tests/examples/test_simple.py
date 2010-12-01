@@ -12,16 +12,16 @@ def test_client():
     result = c.get('/', code=200, as_tuple=True)
     aye('in', 'PATH_INFO', result[0])
     aye('in', 'PATH_INFO', result[0])
-    #aye.call(True, isinstance, result[1], app.response_class)
+    aye.call(True, isinstance, result[1], app.response_class)
 
 
 def test_app():
     aye('==', 'examples.simple', app.import_name)
     aye('==', ('', ''), (app.name, app.prefix))
 
-    aye('==', False, app.jinja)
-    aye('len', 4, marker.defaults.of(app))
-    aye('len', 5, marker.init.of(app))
+    aye.call(False, hasattr, app, 'jinja')
+    aye('len', 2, marker.defaults.of(app))
+    aye('len', 3, marker.init.of(app))
     aye('len', 0, app.modules)
 
     url_rules = list(app.url_rules)

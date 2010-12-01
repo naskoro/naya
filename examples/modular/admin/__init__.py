@@ -1,4 +1,4 @@
-from naya import Module
+from naya.base import Module
 
 
 mod = Module(__name__)
