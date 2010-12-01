@@ -1,8 +1,28 @@
+from subprocess import Popen, PIPE, STDOUT
+
+from naya.testing import aye
+
+
+def test_shell():
+    def check(cmd):
+        cmd = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT)
+        stdout, stderr = cmd.communicate('print(42)\nquit()')
+        aye('==', 0, cmd.returncode)
+        aye('==', '42\n', stdout)
+
+    check('./manage.py shell')
+    check('./manage.py shell --no-bpython')
+
+    cmd = Popen('./manage.py shell', shell=True,
+        stdin=PIPE, stdout=PIPE, stderr=STDOUT
+    )
+    aye('is', None, cmd.terminate())
+
+
 def test_sh():
     '''
     NOTICE: Need Doctest for test_script.test_sh;
 
-    >>> from subprocess import Popen
     >>> from naya.script import sh
     >>> sh('cd ~')
     $ cd ~

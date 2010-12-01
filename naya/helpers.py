@@ -52,16 +52,3 @@ def get_package_path(name):
         return os.path.abspath(os.path.dirname(sys.modules[name].__file__))
     except (KeyError, AttributeError):
         return os.getcwd()
-
-
-def pformat(obj, verbose=False):
-    """
-    Prettyprint an object.  Either use the `pretty` library or the
-    builtin `pprint`.
-    """
-    try:
-        from pretty import pretty
-        return pretty(obj, verbose=verbose)
-    except ImportError:
-        from pprint import pformat
-        return pformat(obj)

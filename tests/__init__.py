@@ -13,7 +13,10 @@ def test_jinja():
     NOTICE: Need doctest
 
     >>> from naya.base import App
+    >>> from examples import small
     >>> app = App(__name__)
     >>> app.jinja
     False
+    >>> app = App(small.app.import_name, {'jinja': {'shared': False}})
+    >>> assert app.jinja
     '''

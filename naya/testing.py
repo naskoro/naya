@@ -1,6 +1,7 @@
+from pprint import pformat
+
 from werkzeug.test import Client as BaseClient
 
-from .helpers import pformat
 
 
 class Client(BaseClient):

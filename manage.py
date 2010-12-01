@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from naya.script import sh
+from naya.script import sh, make_shell
 from werkzeug.script import run
 
 
@@ -36,6 +36,9 @@ def action_test(target='', clean=False, failed=('f', False),
         command.append(target)
 
     sh(' '.join(command))
+
+
+action_shell = make_shell()
 
 
 if __name__ == '__main__':

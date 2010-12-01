@@ -16,7 +16,6 @@ def make_shell(init_func=None, banner=None, use_bpython=True):
     def action(bpython=use_bpython):
         """Start a new interactive python session."""
         namespace = init_func()
-
         if use_bpython:
             try:
                 import bpython
