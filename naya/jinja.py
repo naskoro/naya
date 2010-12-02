@@ -37,6 +37,7 @@ class JinjaMixin(object):
                 'path_ends': [],
                 'path_allow': ['\.css$', '\.js$'],
                 'path_deny': ['\.png$', '\.jpg$', '\.ico$', '\.gif$'],
+                'theme_redirect': True,
                 'filters': {},
                 'prefix_separator': ':'
             }
@@ -52,9 +53,6 @@ class JinjaMixin(object):
 
         self.jinja = Environment(loader=PrefixLoader(self, jinja_loaders))
         self.jinja.filters.update(self.conf['jinja:filters'])
-
-        if not self.conf['jinja:shared']:
-            return
 
         endpoint = self.conf['jinja:endpoint']
         url_prefix = self.conf['jinja:url_prefix']
@@ -144,27 +142,33 @@ class SharedJinjaMiddleware(object):
         return False
 
     def __call__(self, environ, start_response):
+        conf = self.app.conf
+        if not conf['jinja:shared']:
+            return self.dispatch(environ, start_response)
+
         base_path = environ.get('PATH_INFO', '/')
+        path_ends = conf['jinja:path_ends']
         template = None
         if base_path.startswith(self.prefix):
             path = base_path[len(self.prefix):]
             path = '/%s' % path.strip('/')
             path = path.rstrip('/')
-
             path_exists = path in self.app.jinja.list_templates()
-            if not self.is_allow_path(base_path):
-                if  path_exists:
-                    return self.app.redirect(self.app.url_for(
-                        ':%s' % self.app.conf['theme:endpoint'],
+
+            if not self.is_allow_path(path):
+                if path_exists and conf['jinja:theme_redirect']:
+                    path = self.app.url_for(
+                        ':%s' % conf['theme:endpoint'],
                         path=path.lstrip('/')
-                    ))(environ, start_response)
+                    )
+                    if conf['jinja:url_prefix'] == conf['theme:url_prefix']:
+                        environ['PATH_INFO'] = path
+                    else:
+                        return self.app.redirect(path)(environ, start_response)
                 return self.dispatch(environ, start_response)
 
-            paths = [path]
-            path_ends = self.app.conf['jinja:path_ends']
-            if not path_exists:
-                paths = path_ends and [path + end for end in path_ends] or []
-
+            paths = path_ends and [path + end for end in path_ends] or []
+            paths = [path] + paths
             try:
                 template = self.app.jinja.select_template(paths)
             except TemplateNotFound:
@@ -185,8 +189,8 @@ class SharedJinjaMiddleware(object):
 
         main_path = main_path.lstrip('/')
         full_path = self.app.url_for(
-                ':%s' % self.app.conf['jinja:endpoint'], path=main_path
-            )
+            ':%s' % conf['jinja:endpoint'], path=main_path
+        )
         if base_path != full_path:
             response = redirect(full_path)
             return response(environ, start_response)
@@ -195,9 +199,7 @@ class SharedJinjaMiddleware(object):
         mime_type = guessed_type[0] or 'text/plain'
 
         real_path = real_path.lstrip('/')
-        real_path = real_path.replace(
-            self.app.conf['jinja:prefix_separator'], '/'
-        )
+        real_path = real_path.replace(conf['jinja:prefix_separator'], '/')
 
         context = {'app': self.app, 'template': real_path}
         context.update(self.context)

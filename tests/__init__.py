@@ -18,7 +18,4 @@ def test_jinja():
     >>> app = App(__name__)
     >>> app.jinja
     False
-    >>> app = App(small.app.import_name, {'jinja': {'shared': False}})
-    >>> c = app.test_client(code=404)
-    >>> assert c.get('/t/', code=404)
     '''

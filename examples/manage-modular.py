@@ -2,7 +2,7 @@
 from naya.script import make_shell
 from werkzeug.script import make_runserver, run
 
-from . import app
+from modular import app
 
 
 action_shell = make_shell(lambda: {'app': app})

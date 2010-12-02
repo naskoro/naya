@@ -15,6 +15,7 @@ app = App(__name__, {
     'jinja': {
         'path_ends': ['index.html', '.html'],
         'path_allow': ['', '*.css', '*.js', '*.html', '*.txt'],
-        'path_deny': ['text.txt']
+        'path_deny': ['text.txt'],
+        'theme_redirect': False,
     }
 })

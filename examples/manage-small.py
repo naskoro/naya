@@ -2,7 +2,7 @@
 from naya.script import make_shell, sh
 from werkzeug.script import make_runserver, run
 
-from . import app
+from small import app
 
 
 def action_pep8(target='.'):

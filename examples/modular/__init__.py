@@ -15,5 +15,6 @@ app = App(__name__, {
         'url_prefix': '/',
         'path_ends': ['/index.html'],
         'path_allow': ['^[\/\w]*$', '\.html$'],
+        'theme_redirect': False,
     }
 })

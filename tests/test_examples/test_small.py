@@ -82,6 +82,14 @@ def test_jinja_shared():
     c.get('/t/text.txt', code=404)
     c.get('/t/', code=404)
 
+    app.conf['jinja:theme_redirect'] = True
+    c.get('/t/text.txt', code=302)
+    c.get(c.path, code=200, follow_redirects=True)
+    aye('==', '/static/text.txt', c.path)
+
+    app.conf['theme:url_prefix'] = '/t/'
+    c.get('/t/text.txt', code=200)
+
     app.conf['jinja:path_allow'] = ['\.txt$']
     app.conf['jinja:path_deny'] = []
     c.get('/t/text.txt', code=200)
@@ -91,3 +99,6 @@ def test_jinja_shared():
     app.conf['jinja:path_deny'] = ['\.html$']
     c.get('/t/text.txt', code=200)
     c.get('/t/', code=200)
+
+    app.conf['jinja:shared'] = False
+    c.get('/t/', code=404)
