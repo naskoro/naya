@@ -147,16 +147,23 @@ class SharedJinjaMiddleware(object):
         base_path = environ.get('PATH_INFO', '/')
         template = None
         if base_path.startswith(self.prefix):
-            if not self.is_allow_path(base_path):
-                return self.dispatch(environ, start_response)
-
             path = base_path[len(self.prefix):]
             path = '/%s' % path.strip('/')
             path = path.rstrip('/')
 
+            path_exists = path in self.app.jinja.list_templates()
+            if not self.is_allow_path(base_path):
+                if  path_exists:
+                    return self.app.redirect(self.app.url_for(
+                        ':%s' % self.app.conf['theme:endpoint'],
+                        path=path.lstrip('/')
+                    ))(environ, start_response)
+                return self.dispatch(environ, start_response)
+
+            paths = [path]
             path_ends = self.app.conf['jinja:path_ends']
-            paths = path_ends and [path + end for end in path_ends] or []
-            paths = [path] + paths
+            if not path_exists:
+                paths = path_ends and [path + end for end in path_ends] or []
 
             try:
                 template = self.app.jinja.select_template(paths)
