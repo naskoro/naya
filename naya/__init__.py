@@ -63,6 +63,9 @@ class BaseModule(UrlMap):
         self.rule_factory = rule_factory
         return self
 
+    def reload(self):
+        self.__init__(self.import_name, self.conf)
+
     @marker.defaults()
     def module_defaults(self):
         return {

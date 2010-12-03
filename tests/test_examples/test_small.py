@@ -88,6 +88,7 @@ def test_jinja_shared():
     aye('==', '/static/text.txt', c.path)
 
     app.conf['theme:url_prefix'] = '/t/'
+    app.reload()
     c.get('/t/text.txt', code=200)
 
     app.conf['jinja:path_allow'] = ['\.txt$']

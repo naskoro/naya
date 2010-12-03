@@ -161,9 +161,7 @@ class SharedJinjaMiddleware(object):
                         ':%s' % conf['theme:endpoint'],
                         path=path.lstrip('/')
                     )
-                    if conf['jinja:url_prefix'] == conf['theme:url_prefix']:
-                        environ['PATH_INFO'] = path
-                    else:
+                    if path != base_path:
                         return self.app.redirect(path)(environ, start_response)
                 return self.dispatch(environ, start_response)
 
