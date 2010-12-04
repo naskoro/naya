@@ -106,11 +106,11 @@ def test_jinja_shared():
 
 
 def test_session():
-    c.get('session/check', code=200)
+    c.get('session/check/', code=200)
     aye('==', 'no answer', c.data)
 
-    c.get('session/add', code=200)
+    c.get('session/add/', code=200)
     aye('==', 'ok', c.data)
 
-    c.get('session/check', code=200)
+    c.get('session/check/', code=200)
     aye('==', 'answer is 42', c.data)

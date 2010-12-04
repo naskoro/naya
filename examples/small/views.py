@@ -40,13 +40,13 @@ def macro(app):
     return app.from_template('text.txt', 'body')()
 
 
-@mod.route('/session/add')
+@mod.route('/session/add/')
 def session_add(app):
     app.session['answer'] = 42
     return 'ok'
 
 
-@mod.route('/session/check')
+@mod.route('/session/check/')
 def session_check(app):
     if 'answer' in app.session and app.session['answer'] == 42:
         return 'answer is 42'
