@@ -66,6 +66,9 @@ def test_urls():
     c.get('/r/', code=200, follow_redirects=True)
     aye('==', '/', c.path)
 
+    c.get('/r/hello/', code=200, follow_redirects=True)
+    aye('==', '/naspeh', c.path)
+
     args = aye.raises(ValueError, c.get, '/wrong/', code=500)
     aye('==', args[0], 'View function did not return a response')
 

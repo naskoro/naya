@@ -25,6 +25,11 @@ def redirect(app):
     return app.redirect('/')
 
 
+@mod.route('/r/hello/')
+def redirect_to_hello(app):
+    return app.redirect(':hello', name='naspeh')
+
+
 @mod.route('/tuple/')
 def tuple(app):
     return 'tuple', 201

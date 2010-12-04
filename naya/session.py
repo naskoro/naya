@@ -15,7 +15,7 @@ class SessionMixin(object):
             'lifetime': timedelta(31)
         }}
 
-    @marker.pre_request()
+    @marker.pre_request(0)
     def session_load(self):
         self.session = SecureCookie.load_cookie(
             self.request,

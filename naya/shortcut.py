@@ -7,8 +7,12 @@ class ShortcutMixin(object):
     def abort(self, *args, **kwargs):
         return abort(*args, **kwargs)
 
-    def redirect(self, *args, **kwargs):
-        return redirect(*args, **kwargs)
+    def redirect(self, location, **kwargs):
+        code = kwargs.pop('code', None)
+        if kwargs:
+            location = self.url_for(location, **kwargs)
+        options = code and {'code': code} or {}
+        return redirect(location, **options)
 
     def test_client(self, *args, **kwargs):
         url = kwargs.pop('url', '/')
