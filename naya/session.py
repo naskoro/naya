@@ -35,5 +35,3 @@ class SessionMixin(object):
             expires=expires,
             httponly=True
         )
-
-

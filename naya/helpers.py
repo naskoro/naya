@@ -26,9 +26,9 @@ class Mark(object):
         return funcs
 
     def run(self, obj, **options):
-        args =  options.get('args', [])
+        args = options.get('args', [])
         kwargs = options.get('kwargs', {})
-        callback= options.get('callback', lambda x: x)
+        callback = options.get('callback', lambda x: x)
 
         for func in self.of(obj):
             callback(func(*args, **kwargs))
