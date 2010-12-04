@@ -19,7 +19,7 @@ def test_app():
     aye('==', ('', ''), (app.name, app.prefix))
 
     aye.call(False, hasattr, app, 'jinja')
-    aye('len', 2, marker.defaults.of(app))
+    aye('len', 3, marker.defaults.of(app))
     aye('len', 3, marker.init.of(app))
     aye('len', 0, app.modules)
 

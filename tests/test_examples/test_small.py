@@ -11,7 +11,7 @@ def test_app():
     aye('==', 'examples.small', app.import_name)
     aye('!=', False, app.jinja)
 
-    aye('len', 4, marker.defaults.of(app))
+    aye('len', 5, marker.defaults.of(app))
     aye('len', 5, marker.init.of(app))
     aye('len', 1, app.modules)
 
@@ -103,3 +103,14 @@ def test_jinja_shared():
 
     app.conf['jinja:shared'] = False
     c.get('/t/', code=404)
+
+
+def test_session():
+    c.get('session/check', code=200)
+    aye('==', 'no answer', c.data)
+
+    c.get('session/add', code=200)
+    aye('==', 'ok', c.data)
+
+    c.get('session/check', code=200)
+    aye('==', 'answer is 42', c.data)

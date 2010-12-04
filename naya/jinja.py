@@ -29,19 +29,17 @@ class JinjaModuleMixin(object):
 class JinjaMixin(object):
     @marker.defaults()
     def jinja_defaults(self):
-        return {
-            'jinja': {
-                'shared': True,
-                'endpoint': 'jinja',
-                'url_prefix': '/t/',
-                'path_ends': [],
-                'path_allow': ['\.css$', '\.js$'],
-                'path_deny': ['\.png$', '\.jpg$', '\.ico$', '\.gif$'],
-                'theme_redirect': True,
-                'filters': {},
-                'prefix_separator': ':'
-            }
-        }
+        return {'jinja': {
+            'shared': True,
+            'endpoint': 'jinja',
+            'url_prefix': '/t/',
+            'path_ends': [],
+            'path_allow': ['\.css$', '\.js$'],
+            'path_deny': ['\.png$', '\.jpg$', '\.ico$', '\.gif$'],
+            'theme_redirect': True,
+            'filters': {},
+            'prefix_separator': ':'
+        }}
 
     @marker.init()
     def jinja_init(self):

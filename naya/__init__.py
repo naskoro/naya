@@ -9,6 +9,7 @@ from werkzeug.routing import Map, Rule, Submount, BuildError
 
 from .conf import Config
 from .helpers import get_package_path, marker
+from .session import SessionMixin
 from .shortcut import ShortcutMixin
 
 
@@ -86,7 +87,7 @@ class BaseModule(UrlMap):
 
     def get_prefs(self, prefs_):
         prefs = Config()
-        marker.defaults.run(self, lambda x: prefs.update(x))
+        marker.defaults.run(self, callback=lambda x: prefs.update(x))
         prefs.update(prefs_)
         return prefs
 
@@ -217,14 +218,16 @@ class BaseApp(BaseModule):
 
     def dispatch(self, environ, start_response):
         try:
+            marker.pre_request.run(self)
             endpoint, values = self.url_adapter.match()
             handler = self.url_views[endpoint]
             response = handler(self, **values)
             response = self.make_response(response)
         except HTTPException, e:
             response = e
-
         response = self.make_response(response)
+
+        marker.post_request.run(self, args=[response])
         return ClosingIterator(response(environ, start_response))
 
     def __call__(self, environ, start_response):
@@ -235,5 +238,5 @@ class BaseApp(BaseModule):
 Module = BaseModule
 
 
-class App(BaseApp, ShortcutMixin):
+class App(BaseApp, ShortcutMixin, SessionMixin):
     pass

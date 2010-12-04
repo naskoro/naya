@@ -1,11 +1,10 @@
-from . import BaseModule, BaseApp
+from . import BaseModule, App as BaseApp
 from .jinja import JinjaModuleMixin, JinjaMixin
-from .shortcut import ShortcutMixin
 
 
 class Module(BaseModule, JinjaModuleMixin):
     pass
 
 
-class App(BaseApp, ShortcutMixin, JinjaModuleMixin, JinjaMixin):
+class App(BaseApp, JinjaModuleMixin, JinjaMixin):
     pass
