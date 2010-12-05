@@ -1,9 +1,9 @@
-from naya import UrlMap
+from naya.base import NayaBit
 
 
-map = UrlMap(__name__)
+mod = NayaBit(__name__)
 
 
-@map.route('/repos/')
+@mod.route('/repos/')
 def list(app):
     return 'modular.front.repos.list'

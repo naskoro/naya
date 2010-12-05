@@ -1,14 +1,14 @@
-from naya.base import App
+from naya.base import Naya
 
 from . import admin, front, blog
 
 
-app = App(__name__, {
+app = Naya(__name__, {
     'debug': True,
     'modules': {
-        'front': front.mod(prefix=''),
+        'front': (front, {'prefix': ''}),
+        'admin': (admin, {'prefix': 'admin'}),
         'blog': blog.mod(prefix=''),
-        'admin': admin.mod(prefix='admin')
     },
     'jinja': {
         'endpoint': 'tpl',

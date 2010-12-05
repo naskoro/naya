@@ -16,11 +16,11 @@ def test_client():
 
 def test_app():
     aye('==', 'examples.simple', app.import_name)
-    aye('==', ('', ''), (app.name, app.prefix))
+    aye('==', ('', ''), (app['name'], app['prefix']))
 
     aye.call(False, hasattr, app, 'jinja')
     aye('len', 3, marker.defaults.of(app))
-    aye('len', 3, marker.init.of(app))
+    aye('len', 2, marker.init.of(app))
     aye('len', 0, app.modules)
 
     url_rules = list(app.url_rules)

@@ -1,4 +1,4 @@
-from naya import BaseModule
+from naya import NayaBit
 
 
-mod = BaseModule(__name__)
+mod = NayaBit(__name__)

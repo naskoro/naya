@@ -1,13 +1,15 @@
-from naya.base import Module
+from naya.helpers import marker
 
 from . import repos
 
 
-mod = Module(__name__, {
-    'maps': [(repos.map, '')]
-})
+@marker.defaults()
+def defaults():
+    return {
+        'modules': {'': repos.mod}
+    }
 
 
-@mod.route('/dashboard/')
+@marker.route('/dashboard/')
 def dashboard(app):
     return 'modular.front.dashboard'

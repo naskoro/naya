@@ -20,9 +20,9 @@ class JinjaModuleMixin(object):
             }
         }
 
-    @marker.init(1)
+    @marker.init.index(1)
     def jinja_module_init(self):
-        tpl_path = self.get_path(self.conf['jinja:path_suffix'])
+        tpl_path = self.get_path(self['jinja:path_suffix'])
         self.tpl_path = os.path.isdir(tpl_path) and tpl_path or None
 
 
@@ -50,15 +50,15 @@ class JinjaMixin(object):
             return
 
         self.jinja = Environment(loader=PrefixLoader(self, jinja_loaders))
-        self.jinja.filters.update(self.conf['jinja:filters'])
+        self.jinja.filters.update(self['jinja:filters'])
 
-        endpoint = self.conf['jinja:endpoint']
-        url_prefix = self.conf['jinja:url_prefix']
+        endpoint = self['jinja:endpoint']
+        url_prefix = self['jinja:url_prefix']
 
         for module in [self] + self.modules.values():
             if not self.has_templates(module) and self != module:
                 continue
-            prefix = '%s%s' % (url_prefix, module.prefix.lstrip('/'))
+            prefix = '%s%s' % (url_prefix, module['prefix'].lstrip('/'))
             self.add_route(
                 '%s/<path:path>' % prefix.rstrip('/'),
                 module.build_endpoint(endpoint),
@@ -77,7 +77,7 @@ class JinjaMixin(object):
         for module in [self] + self.modules.values():
             if not self.has_templates(module):
                 continue
-            prefix = module.prefix
+            prefix = module['prefix']
             prefix = prefix and '/%s' % prefix or prefix
             jinja_loaders.setdefault(prefix, [])
             jinja_loaders[prefix].append(FileSystemLoader(
@@ -106,7 +106,7 @@ class PrefixLoader(PrefixLoaderBase):
         super(PrefixLoader, self).__init__(*args, **kwargs)
 
     def get_source(self, environment, template):
-        prefix_separator = self.app.conf['jinja:prefix_separator']
+        prefix_separator = self.app['jinja:prefix_separator']
         for prefix, loader in self.mapping.items():
             path = template
             path = '/%s' % path.lstrip('/')
@@ -131,10 +131,10 @@ class SharedJinjaMiddleware(object):
 
     def is_allow_path(self, path):
         path = path.strip('/')
-        for pattern in self.app.conf['jinja:path_deny']:
+        for pattern in self.app['jinja:path_deny']:
             if re.search(pattern, path):
                 return False
-        for pattern in self.app.conf['jinja:path_allow']:
+        for pattern in self.app['jinja:path_allow']:
             if re.search(pattern, path):
                 return True
         return False

@@ -1,9 +1,6 @@
-from naya.base import Module
+from naya.helpers import marker
 
 
-mod = Module(__name__)
-
-
-@mod.route('/dashboard/')
+@marker.route('/dashboard/')
 def dashboard(app):
     return 'modular.admin.dashboard'

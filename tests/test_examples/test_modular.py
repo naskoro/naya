@@ -16,9 +16,9 @@ def test_app():
     blog = app.modules['blog']
     admin = app.modules['admin']
 
-    aye('==', ('front', ''), (front.name, front.prefix))
-    aye('==', ('blog', ''), (blog.name, blog.prefix))
-    aye('==', ('admin', 'admin'), (admin.name, admin.prefix))
+    aye('==', ('front', ''), (front['name'], front['prefix']))
+    aye('==', ('blog', ''), (blog['name'], blog['prefix']))
+    aye('==', ('admin', 'admin'), (admin['name'], admin['prefix']))
 
     aye('==', 'examples.modular.front', front.import_name)
     aye('==', 'examples.modular.blog', blog.import_name)

@@ -1,12 +1,11 @@
-from naya.base import App
+from naya.base import Naya
 
 from . import views, blog
 
 
-app = App(__name__, {
+app = Naya(__name__, {
     'debug': True,
-    'maps': [(blog.map, 'blog')],
-    'modules': {'': views.mod},
+    'modules': {'': views, 'blog': blog},
     'theme': {
         'path_suffix': '_static',
         'endpoint': 'static',

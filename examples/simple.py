@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-from naya import App
+from naya import Naya
 from werkzeug import run_simple
 
 
-app = App(__name__)
+app = Naya(__name__)
 
 
 @app.route('/')

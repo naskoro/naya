@@ -1,9 +1,6 @@
-from naya import UrlMap
+from naya.helpers import marker
 
 
-map = UrlMap(__name__)
-
-
-@map.route('/')
+@marker.route('/')
 def index(app):
     return 'blog.index'

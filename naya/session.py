@@ -15,23 +15,23 @@ class SessionMixin(object):
             'lifetime': timedelta(31)
         }}
 
-    @marker.pre_request(0)
+    @marker.pre_request.index(0)
     def session_load(self):
         self.session = SecureCookie.load_cookie(
             self.request,
-            self.conf['session:cookie_name'],
-            secret_key=self.conf['session:secret_key']
+            self['session:cookie_name'],
+            secret_key=self['session:secret_key']
         )
 
     @marker.post_request()
-    def session_save(self, response):
+    def session_save(self):
         expires = None
-        if self.conf['session:permanent']:
-            expires = datetime.utcnow() + self.conf['session:lifetime']
+        if self['session:permanent']:
+            expires = datetime.utcnow() + self['session:lifetime']
 
         self.session.save_cookie(
-            response,
-            self.conf['session:cookie_name'],
+            self.response,
+            self['session:cookie_name'],
             expires=expires,
             httponly=True
         )

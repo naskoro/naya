@@ -3,35 +3,58 @@ import sys
 
 
 class Mark(object):
-    NAME = '_mark_name_'
-    INDEX = '_mark_index_'
+    MARK = '_mark_'
+    DEFAULT_INDEX = 10
 
     def __init__(self, name):
         self.name = name
 
-    def __call__(self, index=10):
+    def __call__(self, *args, **kwargs):
         def wrap(func):
-            setattr(func, self.NAME, self.name)
-            setattr(func, self.INDEX, index)
+            self.func_set(func, args=args, kwargs=kwargs)
             return func
         return wrap
+
+    def index(self, index):
+        def wrap(func):
+            self.func_set(func, index=index)
+            return func
+        return wrap
+
+    def func_set(self, func, **options_):
+        marks = getattr(func, self.MARK, [])
+        options = {
+            'name': self.name,
+            'index': self.DEFAULT_INDEX,
+            'args': [],
+            'kwargs': {}
+        }
+        options.update(options_)
+        marks.append(options)
+        setattr(func, self.MARK, marks)
+
+    def func_get(self, func):
+        marks = getattr(func, self.MARK, [])
+        return [mark for mark in marks if mark['name'] == self.name]
 
     def of(self, obj):
         funcs = []
         for attr in dir(obj):
             attr = getattr(obj, attr)
-            if callable(attr) and hasattr(attr, self.NAME) \
-            and getattr(attr, self.NAME) == self.name:
-                funcs.insert(getattr(attr, self.INDEX), attr)
+            if not callable(attr):
+                continue
+            marks = self.func_get(attr)
+            for mark in marks:
+                index = mark['index']
+                item = attr, mark['args'], mark['kwargs']
+                funcs.append((index, item))
+        funcs.sort(key=lambda item: item[0])
+        funcs = [func[1] for func in funcs]
         return funcs
 
-    def run(self, obj, **options):
-        args = options.get('args', [])
-        kwargs = options.get('kwargs', {})
-        callback = options.get('callback', lambda x: x)
-
-        for func in self.of(obj):
-            callback(func(*args, **kwargs))
+    def run(self, obj):
+        for func, args, kwargs in self.of(obj):
+            func(*args, **kwargs)
 
 
 class Marker(object):
@@ -50,7 +73,7 @@ class Marker(object):
 marker = Marker()
 
 
-def get_package_path(name):
+def package_path(name):
     """Returns the path to a package or cwd if that cannot be found."""
     try:
         return os.path.abspath(os.path.dirname(sys.modules[name].__file__))

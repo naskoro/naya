@@ -12,11 +12,11 @@ def test_app():
     aye('!=', False, app.jinja)
 
     aye('len', 5, marker.defaults.of(app))
-    aye('len', 5, marker.init.of(app))
-    aye('len', 1, app.modules)
+    aye('len', 4, marker.init.of(app))
+    aye('len', 2, app.modules)
 
     mod = app.modules['']
-    aye('==', ('', ''), (mod.name, mod.prefix))
+    aye('==', ('', ''), (mod['name'], mod['prefix']))
     aye('==', 'examples.small.views', mod.import_name)
 
 

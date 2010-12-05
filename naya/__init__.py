@@ -1,19 +1,16 @@
 import os
 
-from werkzeug import (
-    SharedDataMiddleware, ClosingIterator,
-    Response as BaseResponse, Request as BaseRequest
-)
+from werkzeug import SharedDataMiddleware, ClosingIterator, Response, Request
 from werkzeug.exceptions import HTTPException
 from werkzeug.routing import Map, Rule, Submount, BuildError
 
 from .conf import Config
-from .helpers import get_package_path, marker
+from .helpers import package_path, marker
 from .session import SessionMixin
 from .shortcut import ShortcutMixin
 
 
-class UrlMap(object):
+class Mapper(object):
     def __init__(self, import_name):
         self.import_name = import_name
         self.url_map = Map()
@@ -47,22 +44,31 @@ class UrlMap(object):
         )
 
 
-class BaseModule(UrlMap):
+class NayaBit(Mapper):
     def __init__(self, import_name, prefs=None):
-        super(BaseModule, self).__init__(import_name)
+        super(NayaBit, self).__init__(import_name)
 
         self.conf = self.get_prefs(prefs)
-        self.root_path = get_package_path(self.import_name)
+        self.root_path = package_path(self.import_name)
 
-        theme_path = self.get_path(self.conf['theme:path_suffix'])
+        theme_path = self.get_path(self['theme:path_suffix'])
         self.theme_path = os.path.isdir(theme_path) and theme_path or None
 
         marker.init.run(self)
 
-    def __call__(self, prefix, rule_factory=Submount):
-        self.prefix = prefix
-        self.rule_factory = rule_factory
+    def __getitem__(self, name):
+        return self.conf[name]
+
+    def __setitem__(self, name, value):
+        self.conf[name] = value
+
+    def __call__(self, **prefs):
+        self.conf.update(prefs)
         return self
+
+    @property
+    def module_class(self):
+        return self.__class__
 
     def reload(self):
         self.__init__(self.import_name, self.conf)
@@ -73,21 +79,41 @@ class BaseModule(UrlMap):
             'theme': {
                 'path_suffix': '_theme',
             },
-            'maps': {}
+            'name': '',
+            'prefix': '',
+            'rule_factory': Submount,
+            'modules': {}
         }
 
-    @marker.init(0)
+    @marker.init.index(0)
     def module_init(self):
-        self.name = self.prefix = ''
-        self.rule_factory = Submount
+        self.modules = Config()
+        modules = self['modules']
+        for name, module in modules.items():
+            if not isinstance(module, NayaBit):
+                module = self.from_pymodule(module, name)
+            module['name'] = name
+            self.modules[name] = module
+            self.add_map(module, module['prefix'], module['rule_factory'])
 
-        self.maps = list(self.conf['maps'])
-        for map in self.maps:
-            self.add_map(*map)
+    def from_pymodule(self, module, name):
+        prefs = {}
+        if isinstance(module, (tuple, list)):
+            module, prefs = module
+        prefix = prefs['prefix'] if 'prefix' in prefs else name
+        prefs = self.get_prefs(prefs, module)
+        rules = marker.route.of(module)
+        module = self.module_class(module.__name__, prefs)
+        module['prefix'] = prefix
+        for rule, args, kwargs in rules:
+            module.route(*args, **kwargs)(rule)
+        return module
 
-    def get_prefs(self, prefs_):
+    def get_prefs(self, prefs_, obj=None):
+        obj = obj and obj or self
         prefs = Config()
-        marker.defaults.run(self, callback=lambda x: prefs.update(x))
+        for func, args, kwargs in marker.defaults.of(obj):
+            prefs.update(func(*args, **kwargs))
         prefs.update(prefs_)
         return prefs
 
@@ -97,20 +123,21 @@ class BaseModule(UrlMap):
         return os.path.join(*args)
 
     def __repr__(self):
-        return '<naya.Module({0.import_name})>'.format(self)
+        return '<{0.__class__.__name__}({0.import_name})>'.format(self)
 
 
-class Response(BaseResponse):
+class NayaResponse(Response):
     default_mimetype = 'text/html'
 
 
-class Request(BaseRequest):
+class NayaRequest(Request):
     pass
 
 
-class BaseApp(BaseModule):
-    request_class = Request
-    response_class = Response
+class NayaBase(NayaBit):
+    request_class = NayaRequest
+    response_class = NayaResponse
+    module_class = NayaBit
 
     @marker.defaults()
     def defaults(self):
@@ -120,21 +147,13 @@ class BaseApp(BaseModule):
                'endpoint': 'theme',
                'url_prefix': '/s/'
             },
-            'modules': {},
         }
-
-    @marker.init(0)
-    def init(self):
-        self.modules = self.conf['modules']
-        for name, module in self.modules.items():
-            module.name = name
-            self.add_map(module, module.prefix, module.rule_factory)
 
     @marker.init()
     def init_shares(self):
         shared = False
-        endpoint = self.conf['theme:endpoint']
-        url_prefix = self.conf['theme:url_prefix']
+        endpoint = self['theme:endpoint']
+        url_prefix = self['theme:url_prefix']
 
         modules = list(self.modules.values())
         modules.reverse()
@@ -142,7 +161,7 @@ class BaseApp(BaseModule):
             if not module.theme_path:
                 continue
             prefix = '{0}/{1}'.format(
-                url_prefix.rstrip('/'), module.prefix.lstrip('/')
+                url_prefix.rstrip('/'), module['prefix'].lstrip('/')
             )
             self.share(module, prefix, endpoint)
             shared = True
@@ -190,11 +209,6 @@ class BaseApp(BaseModule):
                 )
                 if url:
                     return url
-            for map, prefix_ in self.maps:
-                if prefix_ == prefix:
-                    url = self._url(self._endpoint(map, suffix), values)
-                    if url:
-                        return url
         return self.url_adapter.build(endpoint, values)
 
     def make_response(self, response):
@@ -226,8 +240,8 @@ class BaseApp(BaseModule):
         except HTTPException, e:
             response = e
         response = self.make_response(response)
-
-        marker.post_request.run(self, args=[response])
+        self.response = response
+        marker.post_request.run(self)
         return ClosingIterator(response(environ, start_response))
 
     def __call__(self, environ, start_response):
@@ -235,8 +249,5 @@ class BaseApp(BaseModule):
         return self.dispatch(environ, start_response)
 
 
-Module = BaseModule
-
-
-class App(BaseApp, ShortcutMixin, SessionMixin):
+class Naya(NayaBase, ShortcutMixin, SessionMixin):
     pass
