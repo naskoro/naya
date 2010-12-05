@@ -24,13 +24,13 @@ class SessionMixin(object):
         )
 
     @marker.post_request()
-    def session_save(self):
+    def session_save(self, response):
         expires = None
         if self['session:permanent']:
             expires = datetime.utcnow() + self['session:lifetime']
 
         self.session.save_cookie(
-            self.response,
+            response,
             self['session:cookie_name'],
             expires=expires,
             httponly=True

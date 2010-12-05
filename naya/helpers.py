@@ -1,5 +1,6 @@
 import os
 import sys
+from types import FunctionType, MethodType
 
 
 class Mark(object):
@@ -11,17 +12,17 @@ class Mark(object):
 
     def __call__(self, *args, **kwargs):
         def wrap(func):
-            self.func_set(func, args=args, kwargs=kwargs)
+            self.set(func, args=args, kwargs=kwargs)
             return func
         return wrap
 
     def index(self, index):
         def wrap(func):
-            self.func_set(func, index=index)
+            self.set(func, index=index)
             return func
         return wrap
 
-    def func_set(self, func, **options_):
+    def set(self, func, **options_):
         marks = getattr(func, self.MARK, [])
         options = {
             'name': self.name,
@@ -33,7 +34,7 @@ class Mark(object):
         marks.append(options)
         setattr(func, self.MARK, marks)
 
-    def func_get(self, func):
+    def get(self, func):
         marks = getattr(func, self.MARK, [])
         return [mark for mark in marks if mark['name'] == self.name]
 
@@ -41,9 +42,9 @@ class Mark(object):
         funcs = []
         for attr in dir(obj):
             attr = getattr(obj, attr)
-            if not callable(attr):
+            if not isinstance(attr, (FunctionType, MethodType)):
                 continue
-            marks = self.func_get(attr)
+            marks = self.get(attr)
             for mark in marks:
                 index = mark['index']
                 item = attr, mark['args'], mark['kwargs']
@@ -52,9 +53,9 @@ class Mark(object):
         funcs = [func[1] for func in funcs]
         return funcs
 
-    def run(self, obj):
-        for func, args, kwargs in self.of(obj):
-            func(*args, **kwargs)
+    def run(self, obj, *args, **kwargs):
+        for func in self.of(obj):
+            func[0](*args, **kwargs)
 
 
 class Marker(object):

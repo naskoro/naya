@@ -235,13 +235,14 @@ class NayaBase(NayaBit):
             marker.pre_request.run(self)
             endpoint, values = self.url_adapter.match()
             handler = self.url_views[endpoint]
+            for func in marker.wrap_handler.of(self):
+                handler = func[0](handler)
             response = handler(self, **values)
             response = self.make_response(response)
         except HTTPException, e:
             response = e
         response = self.make_response(response)
-        self.response = response
-        marker.post_request.run(self)
+        marker.post_request.run(self, response)
         return ClosingIterator(response(environ, start_response))
 
     def __call__(self, environ, start_response):
