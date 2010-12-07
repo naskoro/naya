@@ -22,8 +22,8 @@ class JinjaModuleMixin(object):
 
     @marker.init.index(1)
     def jinja_module_init(self):
-        tpl_path = self.get_path(self['jinja:path_suffix'])
-        self.tpl_path = os.path.isdir(tpl_path) and tpl_path or None
+        jinja_path = self.get_path(self['jinja:path_suffix'])
+        self.jinja_path = os.path.isdir(jinja_path) and jinja_path or None
 
 
 class JinjaMixin(object):
@@ -37,8 +37,12 @@ class JinjaMixin(object):
             'path_allow': ['\.css$', '\.js$'],
             'path_deny': ['\.png$', '\.jpg$', '\.ico$', '\.gif$'],
             'theme_redirect': True,
-            'filters': {},
-            'prefix_separator': ':'
+            'prefix_separator': ':',
+            'env': {
+                'filters': {},
+                'globals': {'app': self},
+                'options': {'autoescape': True}
+            }
         }}
 
     @marker.init()
@@ -49,8 +53,12 @@ class JinjaMixin(object):
         if not jinja_loaders:
             return
 
-        self.jinja = Environment(loader=PrefixLoader(self, jinja_loaders))
-        self.jinja.filters.update(self['jinja:filters'])
+        self.jinja = Environment(
+            loader=PrefixLoader(self, jinja_loaders),
+            **self['jinja:env:options']
+        )
+        self.jinja.filters.update(self['jinja:env:filters'])
+        self.jinja.globals.update(self['jinja:env:globals'])
 
         endpoint = self['jinja:endpoint']
         url_prefix = self['jinja:url_prefix']
@@ -70,7 +78,7 @@ class JinjaMixin(object):
         )
 
     def has_templates(self, module):
-        return hasattr(module, 'tpl_path') and module.tpl_path
+        return hasattr(module, 'jinja_path') and module.jinja_path
 
     def jinja_loaders(self):
         jinja_loaders = {}
@@ -80,9 +88,7 @@ class JinjaMixin(object):
             prefix = module['prefix']
             prefix = prefix and '/%s' % prefix or prefix
             jinja_loaders.setdefault(prefix, [])
-            jinja_loaders[prefix].append(FileSystemLoader(
-                module.tpl_path
-            ))
+            jinja_loaders[prefix].append(FileSystemLoader(module.jinja_path))
 
         for prefix, loader in jinja_loaders.items():
             if isinstance(loader, list):
@@ -90,7 +96,6 @@ class JinjaMixin(object):
         return jinja_loaders
 
     def to_template(self, template_name, **context):
-        context.setdefault('app', self)
         template = self.jinja.get_template(template_name)
         return template.render(**context)
 
@@ -197,7 +202,7 @@ class SharedJinjaMiddleware(object):
         real_path = real_path.lstrip('/')
         real_path = real_path.replace(conf['jinja:prefix_separator'], '/')
 
-        context = {'app': self.app, 'template': real_path}
+        context = {'template': real_path}
         context.update(self.context)
 
         template = template.render(context)
