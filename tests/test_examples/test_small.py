@@ -1,5 +1,5 @@
 from naya.helpers import marker
-from naya.testing import aye
+from naya.testing import aye, call, raises
 
 from examples.small import app
 
@@ -11,9 +11,9 @@ def test_app():
     aye('==', 'examples.small', app.import_name)
     aye('!=', False, app.jinja)
 
-    aye('len', 5, marker.defaults.of(app))
-    aye('len', 4, marker.init.of(app))
-    aye('len', 2, app.modules)
+    aye('==', 5, call(len, marker.defaults.of(app)))
+    aye('==', 4, call(len, marker.init.of(app)))
+    aye('==', 2, call(len, app.modules))
 
     mod = app.modules['']
     aye('==', ('', ''), (mod['name'], mod['prefix']))
@@ -69,8 +69,8 @@ def test_urls():
     c.get('/r/hello/', code=200, follow_redirects=True)
     aye('==', '/naspeh', c.path)
 
-    args = aye.raises(ValueError, c.get, '/wrong/', code=500)
-    aye('==', args[0], 'View function did not return a response')
+    e = raises(ValueError, c.get, '/wrong/', code=500)
+    aye('==', e.args, ('View function did not return a response', ))
 
     c.get('/t/text.txt', code=404)
     c.get('/t/not_found', code=404)

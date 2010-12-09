@@ -1,4 +1,5 @@
 from pprint import pformat
+from types import BuiltinFunctionType, FunctionType, MethodType
 
 from werkzeug.test import Client as BaseClient
 
@@ -40,11 +41,8 @@ class Aye(object):
         (('==; !=; >; <; >=; <=; <>; in; not in; is; not is'.split('; ')),
             2, 'args[0] {0} args[1]', '{0!r} {2} {1!r}'
         ),
-        (('', True, 1), 1, 'args[0]', '{0!r}'),
-        (('not', False, 0), 1, 'not args[0]', 'not {0!r}'),
-        (('len', 'not len'),
-            2, '{0}(args[1]) == args[0]', '{2}({1!r}) == {0!r}'
-        ),
+        ((True, 1), 1, 'args[0]', '{0!r}'),
+        ((False, 0), 1, 'not args[0]', 'not {0!r}'),
     )
 
     def __call__(self, operand, *args, **kwargs):
@@ -58,7 +56,9 @@ class Aye(object):
                     'For %r operand need minimum %s arguments'
                     % (operand, expr[1])
                 )
-            params = list(args[:expr[1]]) + [operand]
+            args = list(args)
+            required = args[:expr[1]]
+            params = required + [operand]
             message = expr[3].format(*params)
             message = 'assert %s' % message
             if 'message' in kwargs:
@@ -70,21 +70,51 @@ class Aye(object):
             if kwargs:
                 message += [pformat(kwargs)]
             message = '\n'.join(message)
+            for i in xrange(len(required)):
+                if isinstance(args[i], Caller):
+                    args[i] = args[i].run()
             assert eval(expr[2].format(operand)), message
             return
 
         raise AttributeError('Use some of\n%s' % pformat(self.expressions))
 
-    def raises(self, expected, callback, *args, **kwargs):
-        try:
-            callback(*args, **kwargs)
-        except expected as e:
-            return e.args
-        else:
-            raise expected('Not raised')
-
-    def call(self, expected, func, *args, **kwargs):
-        aye(expected, func(*args, **kwargs), func, *args, **kwargs)
-
-
 aye = Aye()
+
+
+class Caller(object):
+    def __init__(self, func, *args, **kwargs):
+        self.func = func
+        self.args = args
+        self.kwargs = kwargs
+
+    def __repr__(self):
+        params = []
+        if self.args:
+            params += ['%s' % arg for arg in self.args]
+        if self.kwargs:
+            params += ['%s=%r' % (n, v) for n, v in self.kwargs.items()]
+        params = ', '.join(params)
+
+        func_str = self.func
+        if isinstance(self.func, (BuiltinFunctionType, FunctionType)):
+            func_str = func_str.__name__
+        elif isinstance(self.func, MethodType):
+            func_str = '{0.im_class.__name__}.{0.__name__}'.format(self.func)
+
+        return '{0!r} {1}({2})'.format(self.run(), func_str, params)
+
+    def run(self):
+        return self.func(*self.args, **self.kwargs)
+
+
+def call(func, *args, **kwargs):
+    return Caller(func, *args, **kwargs)
+
+
+def raises(expected, callback, *args, **kwargs):
+    try:
+        callback(*args, **kwargs)
+    except expected as e:
+        return e
+    else:
+        raise expected('Not raised')

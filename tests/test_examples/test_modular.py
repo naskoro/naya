@@ -1,4 +1,4 @@
-from naya.testing import aye
+from naya.testing import aye, call
 
 from examples.modular import app
 
@@ -10,7 +10,7 @@ def test_app():
     aye('==', 'examples.modular', app.import_name)
     aye('!=', False, app.jinja)
 
-    aye('len', 3, app.modules)
+    aye('==', 3, call(len, app.modules))
 
     front = app.modules['front']
     blog = app.modules['blog']

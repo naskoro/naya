@@ -2,7 +2,7 @@ def test_aye():
     '''
     NOTICE: Need Doctest for test_testing.test_aye;
 
-    >>> from naya.testing import aye
+    >>> from naya.testing import aye, call, raises
     >>> aye('==', 1, 1)
     >>> aye('!=', 1, 2)
     >>> aye('==', 'test', 'test1')
@@ -19,7 +19,7 @@ def test_aye():
     AssertionError: assert 1 != 1
 
     >>> aye(True, 1)
-    >>> aye('', 0)
+    >>> aye(1, 0)
     Traceback (most recent call last):
         ...
     AssertionError: assert 0
@@ -35,14 +35,14 @@ def test_aye():
     Traceback (most recent call last):
         ...
     AssertionError: assert 0
-    ('It is not True',)
+    ['It is not True']
     >>> aye(True, 0, m='It is not True')
     Traceback (most recent call last):
         ...
     AssertionError: assert 0
     {'m': 'It is not True'}
-    >>> aye('not', 0, m='It is False')
-    >>> aye('not', 1, m='It is not False')
+    >>> aye(0, 0, m='It is False')
+    >>> aye(0, 1, m='It is not False')
     Traceback (most recent call last):
         ...
     AssertionError: assert not 1
@@ -60,17 +60,16 @@ def test_aye():
     AssertionError: assert '13' in 'answer 42'
     >>> aye('not in', '13', 'answer 42')
 
-    >>> aye('len', 1, ['1'], message='Cool')
-    >>> aye('len', 0, ['1'], message='It is fail')
+    >>> aye('==', 1, call(len, ['1']), message='Cool')
+    >>> aye('==', 0, call(len, ['1']), message='It is fail')
     Traceback (most recent call last):
         ...
-    AssertionError: assert len(['1']) == 0, It is fail
-    >>> aye('not len', 0, ['1'], message='Cool')
-    >>> aye('not len', 1, ['1'], message='It is fail')
+    AssertionError: assert 0 == 1 len(['1']), It is fail
+    >>> aye('!=', 0, call(len, ['1']), message='Cool')
+    >>> aye('!=', 1, call(len, ['1']), message='It is fail')
     Traceback (most recent call last):
         ...
-    AssertionError: assert not len(['1']) == 1, It is fail
-
+    AssertionError: assert 1 != 1 len(['1']), It is fail
     >>> aye('no in', '13', 'answer 42')
     Traceback (most recent call last):
         ...
@@ -79,28 +78,34 @@ def test_aye():
       2,
       'args[0] {0} args[1]',
       '{0!r} {2} {1!r}'),
-     (('', True, 1), 1, 'args[0]', '{0!r}'),
-     (('not', False, 0), 1, 'not args[0]', 'not {0!r}'),
-     (('len', 'not len'), 2, '{0}(args[1]) == args[0]', '{2}({1!r}) == {0!r}'))
+     ((True, 1), 1, 'args[0]', '{0!r}'),
+     ((False, 0), 1, 'not args[0]', 'not {0!r}'))
     >>> aye('==', 42)
     Traceback (most recent call last):
     ...
     AttributeError: For '==' operand need minimum 2 arguments
-    >>> aye('not')
+    >>> aye(0)
     Traceback (most recent call last):
     ...
-    AttributeError: For 'not' operand need minimum 1 arguments
-    >>> aye.call(True, isinstance, {}, dict)
-    >>> aye.call(True, isinstance, {}, str)
+    AttributeError: For 0 operand need minimum 1 arguments
+    >>> aye(True, call(isinstance, {}, dict))
+    >>> aye(True, call(isinstance, {}, str))
     Traceback (most recent call last):
     ...
-    AssertionError: assert False
-    (<built-in function isinstance>, {}, <type 'str'>)
+    AssertionError: assert False isinstance({}, <type 'str'>)
+    >>> call(aye.__call__, 1, 1)
+    None Aye.__call__(1, 1)
+    >>> def answer(name='anonymous'):
+    ...     return '%s, is %s' % (name, 42)
+    >>> call(answer, name='naspeh')
+    'naspeh, is 42' answer(name='naspeh')
+    >>> call(answer)
+    'anonymous, is 42' answer()
     >>> def check():
-    ...     raise KeyError
-    >>> aye.raises(KeyError, check)
-    ()
-    >>> aye.raises(KeyError, lambda: 1)
+    ...     raise KeyError(2, 3)
+    >>> raises(KeyError, check)
+    KeyError(2, 3)
+    >>> raises(KeyError, lambda: 1)
     Traceback (most recent call last):
     ...
     KeyError: 'Not raised'
