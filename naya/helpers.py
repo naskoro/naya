@@ -42,7 +42,7 @@ class Mark(object):
         funcs = []
         for attr in dir(obj):
             attr = getattr(obj, attr)
-            if not isinstance(attr, (FunctionType, MethodType)):
+            if not isinstance(attr, (type, FunctionType, MethodType)):
                 continue
             marks = self.get(attr)
             for mark in marks:
