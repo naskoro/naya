@@ -45,7 +45,16 @@ class Mapper(object):
 
 
 class NayaBit(Mapper):
-    def __init__(self, import_name, prefs=None):
+    marker = marker
+    import_name = None
+
+    def __init__(self, import_name=None, prefs=None):
+        if self.import_name is None:
+            if import_name is None:
+                raise AttributeError('"import_name" no define')
+        else:
+            import_name = self.import_name
+
         super(NayaBit, self).__init__(import_name)
 
         self.conf = self.get_prefs(prefs)
@@ -113,6 +122,8 @@ class NayaBit(Mapper):
         obj = obj and obj or self
         prefs = Config()
         for func, args, kwargs in marker.defaults.of(obj):
+            prefs.update(func(*args, **kwargs))
+        for func, args, kwargs in marker.config.of(obj):
             prefs.update(func(*args, **kwargs))
         prefs.update(prefs_)
         return prefs

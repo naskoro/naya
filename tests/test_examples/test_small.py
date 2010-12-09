@@ -1,9 +1,12 @@
 from naya.helpers import marker
 from naya.testing import aye, call, raises
 
-from examples.small import app
+from examples.small import App
 
 
+app = App(prefs={
+    'testing': True
+})
 c = app.test_client()
 
 
@@ -21,6 +24,14 @@ def test_app():
     mod = app.modules['']
     aye('==', ('', ''), (mod['name'], mod['prefix']))
     aye('==', 'examples.small.views', mod.import_name)
+
+
+def test_app_init():
+    aye(True, app['testing'])
+    aye(False, App()['testing'])
+
+    App.import_name = None
+    raises(AttributeError, lambda: App())
 
 
 def test_url_for():
