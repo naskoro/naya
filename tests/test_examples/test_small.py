@@ -14,6 +14,9 @@ def test_app():
     aye('==', 5, call(len, marker.defaults.of(app)))
     aye('==', 4, call(len, marker.init.of(app)))
     aye('==', 2, call(len, app.modules))
+    aye('==', 1, call(len, marker.pre_request.of(app)))
+    aye('==', 1, call(len, marker.post_request.of(app)))
+    aye('==', 1, call(len, marker.wrap_handler.of(app)))
 
     mod = app.modules['']
     aye('==', ('', ''), (mod['name'], mod['prefix']))
