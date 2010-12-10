@@ -1,10 +1,10 @@
-from . import NayaBit as Module, Naya as App
+from . import NayaBit as _NayaBit, Naya as _Naya
 from .jinja import JinjaModuleMixin, JinjaMixin
 
 
-class NayaBit(Module, JinjaModuleMixin):
+class NayaBit(_NayaBit, JinjaModuleMixin):
     pass
 
 
-class Naya(App, JinjaModuleMixin, JinjaMixin):
+class Naya(_Naya, JinjaModuleMixin, JinjaMixin):
     module_class = NayaBit

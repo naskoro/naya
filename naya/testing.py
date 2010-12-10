@@ -20,6 +20,7 @@ class Client(BaseClient):
         environ, response = super(Client, self).open(*args, **kwargs)
 
         if code:
+            kwargs['as_tuple'] = as_tuple
             aye('==', code, response.status_code, *args, **kwargs)
 
         self.response = response

@@ -15,10 +15,19 @@ def action_clean(mask=''):
     sh('\n'.join(command))
 
 
-def action_test(target='', clean=False, failed=('f', False),
+def action_code():
+    '''Check code style'''
+    action_clean()
+    action_pep8()
+    sh('git diff | grep -5 print')
+
+
+def action_test(target='', base=False, rm=False, failed=('f', False),
                 with_coverage=('c', False), cover_package=('p', 'naya')):
     '''Run tests.'''
-    if clean:
+    if rm:
+        sh('rm .noseids .coverage')
+    if base:
         command = ['nosetests']
     else:
         command = ['nosetests -v --with-doctest']
