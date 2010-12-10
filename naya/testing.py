@@ -40,10 +40,10 @@ class Client(BaseClient):
 class Aye(object):
     expressions = (
         (('==; !=; >; <; >=; <=; <>; in; not in; is; not is'.split('; ')),
-            2, 'args[0] {0} args[1]', '{0!r} {2} {1!r}'
+            2, 'args[0] {0} args[1]', '{0} {2} {1}'
         ),
-        ((True, 1), 1, 'args[0]', '{0!r}'),
-        ((False, 0), 1, 'not args[0]', 'not {0!r}'),
+        ((True, 1), 1, 'args[0]', '{0}'),
+        ((False, 0), 1, 'not args[0]', 'not {0}'),
     )
 
     def __call__(self, operand, *args, **kwargs):
@@ -59,7 +59,11 @@ class Aye(object):
                 )
             args = list(args)
             required = args[:expr[1]]
-            params = required + [operand]
+            params = [
+                isinstance(p, (str, unicode)) and  "'%s'" % p or repr(p)
+                for p in required
+            ] + [operand]
+
             message = expr[3].format(*params)
             message = 'assert %s' % message
             if 'message' in kwargs:
