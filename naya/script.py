@@ -34,7 +34,7 @@ class Shell(object):
     def __init__(self, *args, **kwargs):
         self.defaults(*args, **kwargs)
 
-    def defaults(self, params=None, host=None):
+    def defaults(self, params={}, host=None):
         self.params = params
         self.host = host
 
@@ -53,13 +53,16 @@ class Shell(object):
 
     def __call__(self, command, capture=False, params=None, remote=False):
         self.code = self.stdout = None
-        params = params or self.params
+
+        context = self.params.copy()
+        if params:
+            context.update(params)
 
         if isinstance(command, (tuple, list)):
             command = ' && '.join(command)
 
-        if params:
-            command = Template(command).substitute(params)
+        if context:
+            command = Template(command).substitute(context)
 
         if remote:
             host = remote if isinstance(remote, basestring) else self.host

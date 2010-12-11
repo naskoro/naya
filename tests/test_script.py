@@ -68,6 +68,9 @@ def test_sh():
     >>> sh('echo $answer', params={'answer': 'not 42'})
     $ echo not 42
     not 42
+    >>> sh('echo $answer', params={'42': 'is answer'})
+    $ echo 42
+    42
     >>> answer = sh('echo $answer', capture=True)
     $ echo 42
     >>> assert answer == '42'
