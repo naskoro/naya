@@ -136,14 +136,20 @@ def test_session():
 def test_testing():
     c.get('/')
     aye(True, hasattr(c, 'data'))
+    aye(True, call(isinstance, c.data, unicode))
+
     aye(True, hasattr(c, 'content_type'))
     aye('==', 'text/html; charset=utf-8', c.content_type)
+
     aye(True, hasattr(c, 'status_code'))
     aye(True, 200, c.status_code)
+
     aye(True, hasattr(c, 'headers'))
     aye('in', ('Content-Length', '12'), c.headers.items())
+
     aye(True, hasattr(c, 'path'))
     aye('==', '/', c.path)
+
     aye(True, hasattr(c, 'url'))
     aye('==', 'http://localhost/', c.url)
 

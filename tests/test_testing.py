@@ -1,5 +1,8 @@
+# -*- coding: utf-8 -*-
+
+
 def test_aye():
-    '''
+    u'''
     NOTICE: Need Doctest for test_testing.test_aye;
 
     >>> from naya.testing import aye, call, raises
@@ -54,14 +57,49 @@ def test_aye():
     {'m': 'It is not False'}
 
     >>> aye('in', '42', 'answer 42')
+    >>> aye('in', 'тест', 'тест 42')
+    >>> aye('in', u'тест', u'тест 42')
+    >>> aye('in', '13', """answer 42
+    ... new line
+    ... new line""")
+    Traceback (most recent call last):
+        ...
+    AssertionError: assert '13' in
+    <<<----------
+    answer 42
+    new line
+    new line
+    ---------->>>
     >>> aye('in', '13', u"""answer 42
     ... new line
     ... new line""")
     Traceback (most recent call last):
         ...
-    AssertionError: assert '13' in 'answer 42
+    AssertionError: assert '13' in
+    <<<----------
+    answer 42
     new line
-    new line'
+    new line
+    ---------->>>
+    >>> aye('==', [('test', 'test')]*5, [('answer', 42)]*5)
+    Traceback (most recent call last):
+    ...
+    AssertionError: assert
+    <<<----------
+    [('test', 'test'),
+     ('test', 'test'),
+     ('test', 'test'),
+     ('test', 'test'),
+     ('test', 'test')]
+    ---------->>>
+     ==
+    <<<----------
+    [('answer', 42),
+     ('answer', 42),
+     ('answer', 42),
+     ('answer', 42),
+     ('answer', 42)]
+    ---------->>>
     >>> aye('not in', '13', 'answer 42')
 
     >>> aye('==', 1, call(len, ['1']), message='Cool')
@@ -81,9 +119,9 @@ def test_aye():
     ((['==', '!=', '>', '<', '>=', '<=', '<>', 'in', 'not in', 'is', 'not is'],
       2,
       'args[0] {0} args[1]',
-      '{0} {2} {1}'),
-     ((True, 1), 1, 'args[0]', '{0}'),
-     ((False, 0), 1, 'not args[0]', 'not {0}'))
+      u'{0} {2} {1}'),
+     ((True, 1), 1, 'args[0]', u'{0}'),
+     ((False, 0), 1, 'not args[0]', u'not {0}'))
     >>> aye('==', 42)
     Traceback (most recent call last):
     ...

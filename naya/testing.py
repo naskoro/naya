@@ -1,10 +1,10 @@
 from pprint import pformat
 from types import BuiltinFunctionType, FunctionType, MethodType
 
-from werkzeug.test import Client as BaseClient
+from werkzeug.test import Client as _Client
 
 
-class Client(BaseClient):
+class Client(_Client):
     def __init__(self, *args, **kwargs):
         super(Client, self).__init__(*args, **kwargs)
 
@@ -31,6 +31,8 @@ class Client(BaseClient):
 
     def __getattr__(self, name):
         if name in ['data', 'content_type', 'status_code', 'headers']:
+            if name == 'data':
+                return self.response.data.decode(self.response.charset)
             return getattr(self.response, name)
         if name in ['path', 'url']:
             return getattr(self.request, name)
@@ -40,10 +42,10 @@ class Client(BaseClient):
 class Aye(object):
     expressions = (
         (('==; !=; >; <; >=; <=; <>; in; not in; is; not is'.split('; ')),
-            2, 'args[0] {0} args[1]', '{0} {2} {1}'
+            2, 'args[0] {0} args[1]', u'{0} {2} {1}'
         ),
-        ((True, 1), 1, 'args[0]', '{0}'),
-        ((False, 0), 1, 'not args[0]', 'not {0}'),
+        ((True, 1), 1, 'args[0]', u'{0}'),
+        ((False, 0), 1, 'not args[0]', u'not {0}'),
     )
 
     def __call__(self, operand, *args, **kwargs):
@@ -59,13 +61,23 @@ class Aye(object):
                 )
             args = list(args)
             required = args[:expr[1]]
-            params = [
-                isinstance(p, (str, unicode)) and  "'%s'" % p or repr(p)
-                for p in required
-            ] + [operand]
+
+            params = []
+            for param in required:
+                if isinstance(param, str):
+                    param = param.decode('utf-8')
+                if not isinstance(param, unicode):
+                    param = pformat(param)
+                if '\n' in param:
+                    param = u'\n<<<----------\n%s\n---------->>>\n' % param
+                elif isinstance(param, unicode):
+                    param = u"'%s'" % param
+                params.append(param)
+            params.append(operand)
 
             message = expr[3].format(*params)
-            message = 'assert %s' % message
+            message = ('assert %s' % message).strip()
+            message = message.replace(' \n<', '\n<')
             if 'message' in kwargs:
                 message += ', %s' % kwargs.pop('message')
             message = [message]
