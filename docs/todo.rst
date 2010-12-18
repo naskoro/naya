@@ -6,6 +6,9 @@
 **naya.conf**
  | ? прорефактоорить обработку ошибок, сделать свои Errors;
 
+**naya.jinja**
+ | + прорефакторить значения в path_allow, path_deny;
+
 **naya.marker**
  | ? возможность поставить after, before;
  | - возможность задать ручную сортировку для маркеров через конфиг;
@@ -17,4 +20,4 @@
  | - перехват stdin;
 
 **naya.testing**
- | - заменить __getattribute__ на __getattr__;
+ | + заменить __getattribute__ на __getattr__;
