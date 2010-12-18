@@ -132,6 +132,7 @@ def test_session():
     c.get('session/check/', code=200)
     aye('==', 'answer is 42', c.data)
 
+
 def test_testing():
     c.get('/')
     aye(True, hasattr(c, 'data'))
