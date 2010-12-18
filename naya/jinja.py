@@ -34,8 +34,8 @@ class JinjaMixin(object):
             'endpoint': 'jinja',
             'url_prefix': '/t/',
             'path_ends': [],
-            'path_allow': ['\.css$', '\.js$'],
-            'path_deny': ['\.png$', '\.jpg$', '\.ico$', '\.gif$'],
+            'path_allow': ['\.(css|js)$'],
+            'path_deny': ['\.(png|jpg|ico|gif)$'],
             'theme_redirect': True,
             'prefix_separator': ':',
             'env': {
