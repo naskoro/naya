@@ -23,8 +23,8 @@ class App(Naya):
             },
             'jinja': {
                 'path_ends': ['index.html', '.html'],
-                'path_allow': ['', '*.css', '*.js', '*.html', '*.txt'],
-                'path_deny': ['text.txt'],
+                'path_allow': ['^(|index)$', '\.(css|js|html|txt)$'],
+                'path_deny': ['^text\.txt$'],
                 'theme_redirect': False,
             }
         }
