@@ -4,7 +4,7 @@ Naya - это инструмент, который получился при р�
  - конфигурируемость;
  - модульность;
  - механизм расшерений; например: `интеграция <https://github.com/naspeh/naya/blob/master/naya/jinja.py>`_ с jinja2_
- - ряд удобных утилит; например: для лаконичных `manage.py <https://github.com/naspeh/naya/blob/master/manage.py>`_ и `тестов <https://github.com/naspeh/naya/blob/master/tests/examples/test_modular.py>`_;
+ - ряд удобных утилит; например: для лаконичных `manage.py <https://github.com/naspeh/naya/blob/master/manage.py>`_ и `тестов <https://github.com/naspeh/naya/blob/master/tests/test_examples/test_modular.py>`_;
 
 
 P.S. Есть более зрелые решения, например flask_.
