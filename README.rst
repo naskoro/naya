@@ -3,12 +3,14 @@ Naya - это инструмент, который получился при р�
 В naya есть:
  - конфигурируемость;
  - модульность;
- - механизм расшерений; например: `интеграция <https://github.com/naspeh/naya/blob/master/naya/jinja.py>`_ с jinja2_
- - ряд удобных утилит; например: для лаконичных `manage.py <https://github.com/naspeh/naya/blob/master/manage.py>`_ и `тестов <https://github.com/naspeh/naya/blob/master/tests/test_examples/test_modular.py>`_;
+ - механизм расшерений; например: `интеграция <http://github.com/naspeh/naya/blob/master/naya/jinja.py>`_ с jinja2_
+ - ряд удобных утилит; например: для лаконичных `manage.py <http://github.com/naspeh/naya/blob/master/manage.py>`_ и `тестов <http://github.com/naspeh/naya/blob/master/tests/test_examples/test_small.py>`_;
+ - покрытие тестами 100%, кроме `naya.script <http://github.com/naspeh/naya/blob/master/naya/script.py>`_, хотя `тесты есть <http://github.com/naspeh/naya/blob/master/tests/test_script.py>`_;
 
 
-P.S. Есть более зрелые решения, например flask_.
+P.S. Есть еще интересный микроферймворк flask_ и интересный фреймворк для `GAE <http://code.google.com/intl/ru/appengine/>`_ tipfy_.
 
 .. _flask: http://flask.pocoo.org/
+.. _tipfy: http://www.tipfy.org/
 .. _werkzeug: http://werkzeug.pocoo.org/
 .. _jinja2: http://jinja.pocoo.org/
