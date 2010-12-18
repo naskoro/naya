@@ -92,7 +92,7 @@ def test_aye():
      ('test', 'test'),
      ('test', 'test')]
     ---------->>>
-     ==
+    ==
     <<<----------
     [('answer', 42),
      ('answer', 42),
@@ -119,9 +119,9 @@ def test_aye():
     ((['==', '!=', '>', '<', '>=', '<=', '<>', 'in', 'not in', 'is', 'not is'],
       2,
       'args[0] {0} args[1]',
-      u'{0} {2} {1}'),
+      u'{0}{2}{1}'),
      ((True, 1), 1, 'args[0]', u'{0}'),
-     ((False, 0), 1, 'not args[0]', u'not {0}'))
+     ((False, 0), 1, 'not args[0]', u'not{0}'))
     >>> aye('==', 42)
     Traceback (most recent call last):
     ...

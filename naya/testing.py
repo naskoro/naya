@@ -42,10 +42,10 @@ class Client(_Client):
 class Aye(object):
     expressions = (
         (('==; !=; >; <; >=; <=; <>; in; not in; is; not is'.split('; ')),
-            2, 'args[0] {0} args[1]', u'{0} {2} {1}'
+            2, 'args[0] {0} args[1]', u'{0}{2}{1}'
         ),
         ((True, 1), 1, 'args[0]', u'{0}'),
-        ((False, 0), 1, 'not args[0]', u'not {0}'),
+        ((False, 0), 1, 'not args[0]', u'not{0}'),
     )
 
     def __call__(self, operand, *args, **kwargs):
@@ -71,13 +71,16 @@ class Aye(object):
                 if '\n' in param:
                     param = u'\n<<<----------\n%s\n---------->>>\n' % param
                 elif isinstance(param, unicode):
-                    param = u"'%s'" % param
+                    param = u" '%s' " % param
+                else:
+                    param = u' %s ' % param
                 params.append(param)
             params.append(operand)
 
             message = expr[3].format(*params)
-            message = ('assert %s' % message).strip()
-            message = message.replace(' \n<', '\n<')
+            message = (message.strip(' ')).rstrip('\n')
+            prefix = message.startswith('\n') and 'assert' or 'assert '
+            message = prefix + message
             if 'message' in kwargs:
                 message += ', %s' % kwargs.pop('message')
             message = [message]
