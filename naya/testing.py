@@ -29,12 +29,12 @@ class Client(BaseClient):
             return environ, response
         return response
 
-    def __getattribute__(self, name):
+    def __getattr__(self, name):
         if name in ['data', 'content_type', 'status_code', 'headers']:
             return getattr(self.response, name)
         if name in ['path', 'url']:
             return getattr(self.request, name)
-        return BaseClient.__getattribute__(self, name)
+        raise AttributeError(name)
 
 
 class Aye(object):
