@@ -36,6 +36,7 @@ class JinjaMixin(object):
             'path_ends': [],
             'path_allow': ['\.(css|js)$'],
             'path_deny': ['\.(png|jpg|ico|gif)$'],
+            'default_mimetype': 'text/html',
             'theme_redirect': True,
             'prefix_separator': ':',
             'env': {
@@ -197,7 +198,7 @@ class SharedJinjaMiddleware(object):
             return response(environ, start_response)
 
         guessed_type = mimetypes.guess_type(real_path)
-        mime_type = guessed_type[0] or 'text/plain'
+        mime_type = guessed_type[0] or conf['jinja:default_mimetype']
 
         real_path = real_path.lstrip('/')
         real_path = real_path.replace(conf['jinja:prefix_separator'], '/')
