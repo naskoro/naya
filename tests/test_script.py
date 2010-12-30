@@ -24,6 +24,7 @@ def test_sh():
     NOTICE: Need Doctest for test_script.test_sh;
 
     >>> from naya.script import sh
+    >>> sh.defaults(capture=True)
     >>> sh('cd ~')
     $ cd ~
     >>> sh.stdout
@@ -33,11 +34,10 @@ def test_sh():
     $ cd ~ && cd /
     >>> sh('echo "test"')
     $ echo "test"
-    test
+    'test'
     >>> sh(('echo "test"', 'echo "test"'))
     $ echo "test" && echo "test"
-    test
-    test
+    'test\\ntest'
     >>> sh(('echo "test"', 'cd __'))
     Traceback (most recent call last):
         ...
@@ -48,30 +48,34 @@ def test_sh():
     2
     >>> sh('echo $answer', params={'answer':'42'})
     $ echo 42
-    42
+    '42'
     >>> sh('echo "$answer"', params={'answer': 42})
     $ echo "42"
-    42
+    '42'
     >>> sh('echo 42', remote='localhost')
     $ ssh localhost "echo 42"
-    42
+    '42'
     >>> sh('echo "42"', remote='localhost')
     $ ssh localhost "echo \\"42\\""
-    42
-    >>> sh.defaults(params={'answer': '42'}, host='localhost')
+    '42'
+    >>> sh.defaults(params={'answer': '42'}, host='localhost', capture=True)
     >>> sh('echo $answer')
     $ echo 42
-    42
+    '42'
     >>> sh('echo $answer', remote=True)
     $ ssh localhost "echo 42"
-    42
+    '42'
     >>> sh('echo $answer', params={'answer': 'not 42'})
     $ echo not 42
-    not 42
+    'not 42'
     >>> sh('echo $answer', params={'42': 'is answer'})
     $ echo 42
-    42
+    '42'
     >>> answer = sh('echo $answer', capture=True)
     $ echo 42
     >>> assert answer == '42'
+    >>> sh('echo $answer', answer=42)
+    Traceback (most recent call last):
+    ...
+    KeyError: "Unknown options: {'answer': 42}"
     '''

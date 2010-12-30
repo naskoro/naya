@@ -34,25 +34,21 @@ class Shell(object):
     def __init__(self, *args, **kwargs):
         self.defaults(*args, **kwargs)
 
-    def defaults(self, params={}, host=None):
+    def defaults(self, params={}, host=None, capture=False, remote=False):
         self.params = params
         self.host = host
+        self.capture = capture
+        self.remote = remote
 
-    def run(self, cmd, capture):
-        if capture:
-            return cmd.wait(), cmd.stdout.read()
-
-        stdout = ''
-        while True:
-            line = cmd.stdout.readline()
-            if not line:
-                break
-            print(line.rstrip())
-            stdout += line
-        return cmd.wait(), stdout
-
-    def __call__(self, command, capture=False, params=None, remote=False):
+    def __call__(self, command, **options):
         self.code = self.stdout = None
+
+        params = options.pop('params', None)
+        remote = options.pop('remote', self.remote)
+        capture = options.pop('capture', self.capture)
+
+        if options:
+            raise KeyError('Unknown options: %r' % options)
 
         context = self.params.copy()
         if params:
@@ -71,9 +67,12 @@ class Shell(object):
 
         print('$ {0!s}'.format(command))
 
-        cmd = Popen([command], stdout=PIPE, stderr=STDOUT, shell=True)
+        stdout = None
+        if capture:
+            stdout = PIPE
+        cmd = Popen([command], stdout=stdout, stderr=STDOUT, shell=True)
         try:
-            code, stdout = self.run(cmd, capture)
+            stdout, code = cmd.communicate()[0], cmd.returncode
         except KeyboardInterrupt:
             print('\nStopped.')
             sys.exit(1)
