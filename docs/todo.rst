@@ -17,7 +17,7 @@
 **naya.script**
  | - написать что-то типа call_command;
  | - переделать тестирование для make_shell, чтоб учитывался coverage-м;
- | - перехват stdin;
+ | + перехват stdin;
 
 **naya.testing**
  | + заменить __getattribute__ на __getattr__;
