@@ -240,6 +240,8 @@ class NayaBase(NayaBit):
     def pre_dispatch(self, environ):
         self.request = Request(environ)
         self.url_adapter = self.url_map.bind_to_environ(environ)
+        for func in marker.middleware.of(self):
+            self.dispatch = func[0](self.dispatch)
 
     def dispatch(self, environ, start_response):
         try:

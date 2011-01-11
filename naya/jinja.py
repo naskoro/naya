@@ -74,8 +74,10 @@ class JinjaMixin(object):
                 build_only=True
             )
 
-        self.dispatch = SharedJinjaMiddleware(
-            self.dispatch, self, url_prefix
+    @marker.middleware()
+    def jinja_shared(self, dispatch):
+        return SharedJinjaMiddleware(
+            dispatch, self, self['jinja:url_prefix']
         )
 
     def has_templates(self, module):
