@@ -19,5 +19,5 @@ class ShortcutMixin(object):
         code = kwargs.pop('code', 200)
 
         client = Client(self, *args, **kwargs)
-        client.get(url, code=code)
+        client.get(url, code=code, chain_info=False)
         return client

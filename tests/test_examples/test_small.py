@@ -133,8 +133,16 @@ def test_session():
     aye('==', 'answer is 42', c.data)
 
 
+def test_testing_chain_info():
+    '''
+    >>> c = app.test_client()
+    >>> rv = c.get('/', query_string={'answer': 42}, code=200)
+    http://localhost/?answer=42 (GET, 200)
+    '''
+
+
 def test_testing():
-    c.get('/')
+    c.get('/', query_string={'answer': '42'})
     aye(True, hasattr(c, 'data'))
     aye(True, call(isinstance, c.data, unicode))
 
@@ -151,6 +159,6 @@ def test_testing():
     aye('==', '/', c.path)
 
     aye(True, hasattr(c, 'url'))
-    aye('==', 'http://localhost/', c.url)
+    aye('==', 'http://localhost/?answer=42', c.url)
 
     aye(False, hasattr(c, 'answer'))

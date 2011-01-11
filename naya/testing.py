@@ -1,3 +1,4 @@
+import re
 from pprint import pformat
 from types import BuiltinFunctionType, FunctionType, MethodType
 
@@ -15,6 +16,7 @@ class Client(_Client):
     def open(self, *args, **kwargs):
         code = kwargs.pop('code', None)
         as_tuple = kwargs.pop('as_tuple', False)
+        chain_info = kwargs.pop('chain_info', True)
 
         kwargs['as_tuple'] = True
         environ, response = super(Client, self).open(*args, **kwargs)
@@ -25,6 +27,9 @@ class Client(_Client):
 
         self.response = response
         self.request = self.app.request_class(environ)
+
+        if chain_info:
+            print('{0.url} ({0.method}, {0.status_code})'.format(self))
         if as_tuple:
             return environ, response
         return response
@@ -34,7 +39,7 @@ class Client(_Client):
             if name == 'data':
                 return self.response.data.decode(self.response.charset)
             return getattr(self.response, name)
-        if name in ['path', 'url']:
+        if name in ['path', 'url', 'method']:
             return getattr(self.request, name)
         raise AttributeError(name)
 
@@ -48,6 +53,22 @@ class Aye(object):
         ((False, 0), 1, 'not args[0]', u'not{0}'),
     )
 
+    def to_string(self, params_, prepare=True):
+        params = []
+        for param in params_:
+            if isinstance(param, str):
+                param = param.decode('utf-8')
+            if not isinstance(param, unicode):
+                param = pformat(param)
+            if '\n' in param:
+                param = u'\n<<<----------\n%s\n---------->>>\n' % param
+            elif isinstance(param, unicode) and prepare:
+                param = u" '%s' " % param
+            else:
+                param = u' %s ' % param
+            params.append(param)
+        return params
+
     def __call__(self, operand, *args, **kwargs):
         '''Helper for assertion in test.'''
         for expr in self.expressions:
@@ -60,23 +81,10 @@ class Aye(object):
                     % (operand, expr[1])
                 )
             args = list(args)
+
             required = args[:expr[1]]
-
-            params = []
-            for param in required:
-                if isinstance(param, str):
-                    param = param.decode('utf-8')
-                if not isinstance(param, unicode):
-                    param = pformat(param)
-                if '\n' in param:
-                    param = u'\n<<<----------\n%s\n---------->>>\n' % param
-                elif isinstance(param, unicode):
-                    param = u" '%s' " % param
-                else:
-                    param = u' %s ' % param
-                params.append(param)
+            params = self.to_string(required)
             params.append(operand)
-
             message = expr[3].format(*params)
             message = (message.strip(' ')).rstrip('\n')
             prefix = message.startswith('\n') and 'assert' or 'assert '
@@ -86,10 +94,11 @@ class Aye(object):
             message = [message]
             extra = args[expr[1]:]
             if extra:
-                message += [pformat(extra)]
+                message += self.to_string(extra)
             if kwargs:
-                message += [pformat(kwargs)]
-            message = '\n'.join(message)
+                message += self.to_string([pformat(kwargs)], prepare=False)
+            message = ''.join(message)
+            message = re.sub('\s$', '', message)
             for i in xrange(len(required)):
                 if isinstance(args[i], Caller):
                     args[i] = args[i].run()

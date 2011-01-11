@@ -37,24 +37,20 @@ def test_aye():
     >>> aye(True, 0, 'It is not True')
     Traceback (most recent call last):
         ...
-    AssertionError: assert 0
-    ['It is not True']
+    AssertionError: assert 0 'It is not True'
     >>> aye(True, 0, m='It is not True')
     Traceback (most recent call last):
         ...
-    AssertionError: assert 0
-    {'m': 'It is not True'}
+    AssertionError: assert 0 {'m': 'It is not True'}
     >>> aye(0, 0, m='It is False')
     >>> aye(0, 1, m='It is not False')
     Traceback (most recent call last):
         ...
-    AssertionError: assert not 1
-    {'m': 'It is not False'}
+    AssertionError: assert not 1 {'m': 'It is not False'}
     >>> aye(False, 1, m='It is not False')
     Traceback (most recent call last):
         ...
-    AssertionError: assert not 1
-    {'m': 'It is not False'}
+    AssertionError: assert not 1 {'m': 'It is not False'}
 
     >>> aye('in', '42', 'answer 42')
     >>> aye('in', 'тест', 'тест 42')
@@ -76,6 +72,17 @@ def test_aye():
     Traceback (most recent call last):
         ...
     AssertionError: assert '13' in
+    <<<----------
+    answer 42
+    new line
+    new line
+    ---------->>>
+    >>> aye('==', '42', 42, """answer 42
+    ... new line
+    ... new line""")
+    Traceback (most recent call last):
+        ...
+    AssertionError: assert '42' == 42
     <<<----------
     answer 42
     new line
