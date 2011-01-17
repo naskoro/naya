@@ -57,8 +57,8 @@ class NayaBit(Mapper):
 
         super(NayaBit, self).__init__(import_name)
 
-        self.conf = self.get_prefs(prefs)
         self.root_path = package_path(self.import_name)
+        self.conf = self.get_prefs(prefs)
 
         theme_path = self.get_path(self['theme:path_suffix'])
         self.theme_path = os.path.isdir(theme_path) and theme_path or None
@@ -237,11 +237,14 @@ class NayaBase(NayaBit):
             return self.response_class(*response)
         return self.response_class.force_type(response, self.request.environ)
 
+    @marker.init.index(100)
+    def init_dispatch(self):
+        for func in marker.middleware.of(self):
+            self.dispatch = func[0](self.dispatch)
+
     def pre_dispatch(self, environ):
         self.request = Request(environ)
         self.url_adapter = self.url_map.bind_to_environ(environ)
-        for func in marker.middleware.of(self):
-            self.dispatch = func[0](self.dispatch)
 
     def dispatch(self, environ, start_response):
         try:
