@@ -44,6 +44,9 @@ def test_sh():
     SystemExit: 2
     >>> sh.stdout
     "test\\ncd: 1: can't cd to __"
+    >>> sh(('echo "test"', 'cd __'), no_exit=True)
+    $ echo "test" && cd __
+    "test\\ncd: 1: can't cd to __"
     >>> sh.code
     2
     >>> sh('echo $answer', params={'answer':'42'})
@@ -75,6 +78,10 @@ def test_sh():
     $ echo 42
     >>> assert answer == '42'
     >>> sh('echo $answer', answer=42)
+    Traceback (most recent call last):
+    ...
+    KeyError: "Unknown options: {'answer': 42}"
+    >>> sh.defaults(answer=42)
     Traceback (most recent call last):
     ...
     KeyError: "Unknown options: {'answer': 42}"

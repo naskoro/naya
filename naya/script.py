@@ -34,11 +34,18 @@ class Shell(object):
     def __init__(self, *args, **kwargs):
         self.defaults(*args, **kwargs)
 
-    def defaults(self, params={}, host=None, capture=False, remote=False):
-        self.params = params
-        self.host = host
-        self.capture = capture
-        self.remote = remote
+    def wrong_options(self, options):
+        raise KeyError('Unknown options: %r' % options)
+
+    def defaults(self, **options):
+        self.params = options.pop('params', {})
+        self.host = options.pop('host', None)
+        self.remote = options.pop('remote', False)
+        self.capture = options.pop('capture', False)
+        self.no_exit = options.pop('no_exit', False)
+
+        if options:
+            self.wrong_options(options)
 
     def __call__(self, command, **options):
         self.code = self.stdout = None
@@ -46,9 +53,10 @@ class Shell(object):
         params = options.pop('params', None)
         remote = options.pop('remote', self.remote)
         capture = options.pop('capture', self.capture)
+        no_exit = options.pop('no_exit', self.no_exit)
 
         if options:
-            raise KeyError('Unknown options: %r' % options)
+            self.wrong_options(options)
 
         context = self.params.copy()
         if params:
@@ -79,7 +87,7 @@ class Shell(object):
 
         self.code = code
         self.stdout = stdout and stdout.strip() or None
-        if code != 0:
+        if code != 0 and not no_exit:
             print('Failed with code {0}.\n'.format(code))
             sys.exit(code)
 
