@@ -245,10 +245,10 @@ class NayaBase(NayaBit):
     def pre_dispatch(self, environ):
         self.request = Request(environ)
         self.url_adapter = self.url_map.bind_to_environ(environ)
+        marker.pre_request.run(self)
 
     def dispatch(self, environ, start_response):
         try:
-            marker.pre_request.run(self)
             endpoint, values = self.url_adapter.match()
             handler = self.url_views[endpoint]
             for func in marker.wrap_handler.of(self):
