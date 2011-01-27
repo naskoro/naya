@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from naya.helpers import marker
 from naya.testing import aye, call, raises
 
@@ -163,3 +164,7 @@ def test_testing():
     aye('==', 'http://localhost/?answer=42', c.url)
 
     aye(False, hasattr(c, 'answer'))
+
+    raises(AssertionError, lambda: aye('in', u' ответ', 'answer 42'))
+
+    aye('in', 'Hello world!', c.cssselect('p'))

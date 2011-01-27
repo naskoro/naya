@@ -43,6 +43,20 @@ class Client(_Client):
             return getattr(self.request, name)
         raise AttributeError(name)
 
+    def cssselect(self, selector, data=None):
+        from lxml.html import fromstring, tostring
+
+        def to_unicode(element):
+            return tostring(
+                element, encoding='utf-8', pretty_print=True
+            ).decode('utf-8')
+
+        if not data:
+            data = self.data
+
+        result = fromstring(data).cssselect(selector)
+        return '\n\n'.join([to_unicode(row) for row in result])
+
 
 class Aye(object):
     expressions = (
@@ -99,6 +113,7 @@ class Aye(object):
                 message += self.to_string([pformat(kwargs)], prepare=False)
             message = ''.join(message)
             message = re.sub('\s$', '', message)
+            message = message.encode('utf-8')
             for i in xrange(len(required)):
                 if isinstance(args[i], Caller):
                     args[i] = args[i].run()

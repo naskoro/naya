@@ -1,8 +1,9 @@
 -e git://github.com/mitsuhiko/werkzeug.git#egg=werkzeug
 -e git://github.com/mitsuhiko/jinja2.git#egg=jinja2
+lxml
 
 nose
 coverage
-
 pep8
+pyflakes
 bpython
