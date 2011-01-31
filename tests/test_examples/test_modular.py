@@ -57,7 +57,7 @@ def test_urls():
     c.get('/admin/base.html', code=200)
     aye('in', 'front', c.data)
 
-    c.get('/admin/base', code=302)
+    c.get('/admin/base', code=301)
     c.get('/admin/base/', code=200)
     aye('in', 'text/html', c.content_type)
     aye('in', 'admin', c.data)

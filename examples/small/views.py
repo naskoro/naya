@@ -24,7 +24,7 @@ def redirect(app):
 
 @marker.route('/r/hello/')
 def redirect_to_hello(app):
-    return app.redirect(':hello', name='naspeh')
+    return app.redirect(app.url_for(':hello', name='naspeh'))
 
 
 @marker.route('/tuple/')

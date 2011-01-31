@@ -245,7 +245,10 @@ class NayaBase(NayaBit):
     def pre_dispatch(self, environ):
         self.request = Request(environ)
         self.url_adapter = self.url_map.bind_to_environ(environ)
-        marker.pre_request.run(self)
+        for func in marker.pre_request.of(self):
+            response = func[0]()
+            if response:
+                return response
 
     def dispatch(self, environ, start_response):
         try:
@@ -262,7 +265,9 @@ class NayaBase(NayaBit):
         return ClosingIterator(response(environ, start_response))
 
     def __call__(self, environ, start_response):
-        self.pre_dispatch(environ)
+        response = self.pre_dispatch(environ)
+        if response:
+            return response(environ, start_response)
         return self.dispatch(environ, start_response)
 
 

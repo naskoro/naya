@@ -168,7 +168,8 @@ class SharedJinjaMiddleware(object):
                         path=path.lstrip('/')
                     )
                     if path != base_path:
-                        return self.app.redirect(path)(environ, start_response)
+                        return redirect(
+                            path, code=301)(environ, start_response)
                 return self.dispatch(environ, start_response)
 
             paths = path_ends and [path + end for end in path_ends] or []
@@ -196,7 +197,7 @@ class SharedJinjaMiddleware(object):
             ':%s' % conf['jinja:endpoint'], path=main_path
         )
         if base_path != full_path:
-            response = redirect(full_path)
+            response = redirect(full_path, code=301)
             return response(environ, start_response)
 
         guessed_type = mimetypes.guess_type(real_path)

@@ -52,10 +52,10 @@ def test_urls():
     c.get('/', code=200)
     aye('in', 'Hello world!', c.data)
 
-    c.get('/t/index.html/', code=302)
-    c.get('/t/index.html', code=302)
-    c.get('/t/index', code=302)
-    c.get('/t/index/', code=302)
+    c.get('/t/index.html/', code=301)
+    c.get('/t/index.html', code=301)
+    c.get('/t/index', code=301)
+    c.get('/t/index/', code=301)
 
     c.get('/t/index/', code=200, follow_redirects=True)
     aye('==', '/t/', c.path)
@@ -102,7 +102,7 @@ def test_jinja_shared():
     c.get('/t/', code=404)
 
     app['jinja:theme_redirect'] = True
-    c.get('/t/text.txt', code=302)
+    c.get('/t/text.txt', code=301)
     c.get(c.path, code=200, follow_redirects=True)
     aye('==', '/static/text.txt', c.path)
 
