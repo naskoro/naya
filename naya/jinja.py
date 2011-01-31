@@ -168,8 +168,9 @@ class SharedJinjaMiddleware(object):
                         path=path.lstrip('/')
                     )
                     if path != base_path:
-                        return redirect(
-                            path, code=301)(environ, start_response)
+                        return redirect(path, code=301)(
+                            environ, start_response
+                        )
                 return self.dispatch(environ, start_response)
 
             paths = path_ends and [path + end for end in path_ends] or []
