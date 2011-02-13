@@ -131,7 +131,7 @@ class NayaBit(Mapper):
     def get_path(self, *args):
         args = list(args)
         args.insert(0, self.root_path)
-        return os.path.join(*args)
+        return os.path.abspath(os.path.join(*args))
 
     def __repr__(self):
         return '<{0.__class__.__name__}({0.import_name})>'.format(self)
