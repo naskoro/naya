@@ -43,10 +43,10 @@ def test_sh():
         ...
     SystemExit: 2
     >>> sh.stdout
-    "test\\ncd: 1: can't cd to __"
+    "test\\n/bin/sh: 1: cd: can't cd to __"
     >>> sh(('echo "test"', 'cd __'), no_exit=True)
     $ echo "test" && cd __
-    "test\\ncd: 1: can't cd to __"
+    "test\\n/bin/sh: 1: cd: can't cd to __"
     >>> sh.code
     2
     >>> sh('echo $answer', params={'answer':'42'})
