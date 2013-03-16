@@ -258,7 +258,7 @@ class NayaBase(NayaBit):
                 handler = func[0](handler)
             response = handler(self, **values)
             response = self.make_response(response)
-        except HTTPException, e:
+        except HTTPException as e:
             response = e
         response = self.make_response(response)
         marker.post_request.run(self, response)
